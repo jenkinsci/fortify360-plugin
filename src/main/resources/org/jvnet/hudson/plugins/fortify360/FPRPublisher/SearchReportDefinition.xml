@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ReportDefinition type="standard" ID="artifact">
+	<TemplateName>Fortify Scan Summary</TemplateName>
+	<TemplatePath></TemplatePath>
+	<LogoPath>/fortify.jpg</LogoPath>
+	<Footnote>Copyright 2007 Fortify Software Inc.</Footnote>
+	<ReportSection enabled="true" optionalSubsections="false">
+		<Title>Issue Count with Search Condition</Title>
+		<SubSection enabled="true">
+			<Title>Issues By FPO</Title>
+			<IssueListing limit="-1" listing="false">
+				<Refinement/>
+				<Chart chartType="table">
+					<Axis>Fortify Priority Order</Axis>
+				</Chart>
+			</IssueListing>
+		</SubSection>
+	</ReportSection>
+</ReportDefinition>

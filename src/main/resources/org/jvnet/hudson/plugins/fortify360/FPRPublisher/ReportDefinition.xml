@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ReportDefinition type="standard" ID="artifact">
+	<TemplateName>Fortify Scan Summary</TemplateName>
+	<TemplatePath></TemplatePath>
+	<LogoPath>/fortify.jpg</LogoPath>
+	<Footnote>Copyright 2007 Fortify Software Inc.</Footnote>
+	<ReportSection enabled="true" optionalSubsections="false">
+		<Title>Issue Count by FPO</Title>
+		<SubSection enabled="true">
+			<Title>LOC</Title>
+			<Text>$LOC$</Text>
+		</SubSection>
+		<SubSection enabled="true">
+			<Title>Issues By FPO</Title>
+			<IssueListing limit="-1" listing="false">
+				<Refinement/>
+				<Chart chartType="table">
+					<Axis>Fortify Priority Order</Axis>
+				</Chart>
+			</IssueListing>
+		</SubSection>
+		<SubSection enabled="true">
+			<Title>Issues By Analysis</Title>
+			<IssueListing limit="-1" listing="false">
+				<Refinement/>
+				<Chart chartType="table">
+					<Axis>Analysis</Axis>
+				</Chart>
+			</IssueListing>
+		</SubSection>
+	</ReportSection>
+</ReportDefinition>
