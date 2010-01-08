@@ -17,7 +17,10 @@ public class FPRSummary {
 	private Integer warning;
 	private Integer info;
 	
-	public FPRSummary() { }
+	public FPRSummary() { 
+		nvs = 0.0;
+		failedCount = 0;
+	}
 	
 	public void load(File file) throws IOException {
 		XmlFile xml = new XmlFile(file);

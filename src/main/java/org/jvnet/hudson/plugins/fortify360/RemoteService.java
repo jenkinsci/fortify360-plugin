@@ -46,7 +46,7 @@ public class RemoteService implements FilePath.FileCallable<FPRSummary> {
 			summary.setFprFullPath(fprFullPath);
 			summary.setNvs(nvs);
 			
-			if ( null != searchCondition ) {
+			if ( !isEmpty(searchCondition) ) {
 				template2 = saveReportTemplate(true, searchCondition);
 				outputXml2 = createXMLReport(realFPR, template2, filterSet);
 				int count = getCountFromReport(outputXml2);	
@@ -117,7 +117,11 @@ public class RemoteService implements FilePath.FileCallable<FPRSummary> {
 	
 	private static File createXMLReport(File fpr, File template, String filterSet) throws InterruptedException, IOException {		
 		String os = System.getProperty("os.name");
-		String image = os.matches("Win.*|.*win.*") ? "reportGenerator.bat" : "reportGenerator";
+		// Win: the name is reportGenerator.bat
+		// Linux: the name is ReportGenerator (case sensitive)
+		// I think we have reportGenerator on Mac, but not sure about the name
+		// other platforms: no such utility
+		String image = os.matches("Win.*|.*win.*") ? "reportGenerator.bat" : "ReportGenerator";
 		
 		File outputXml = File.createTempFile("report", ".xml");
 		
@@ -135,6 +139,7 @@ public class RemoteService implements FilePath.FileCallable<FPRSummary> {
 		}
 		
 		ProcessBuilder pb = new ProcessBuilder(cmd);
+		System.out.println("EXE: " + cmd.toString());
 		Process proc = pb.start();
 		proc.waitFor();
 		int exitValue = proc.exitValue();

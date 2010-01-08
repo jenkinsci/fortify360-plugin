@@ -71,7 +71,7 @@ public class RemoteServiceTest {
 			System.out.println("NVS = " + nvs);
 			System.out.println("Fail Count = " + count);
 			assertEquals(95.52, nvs, 0.1);
-			assertNull(count);
+			assertEquals(0, count);
 		}
 	}
 
@@ -105,7 +105,7 @@ public class RemoteServiceTest {
 			System.out.println("NVS = " + nvs);
 			System.out.println("Fail Count = " + count);
 			assertEquals(50.0, nvs, 0.1);
-			assertNull(count);
+			assertEquals(0, count);
 		}
 	}
 	
@@ -139,7 +139,7 @@ public class RemoteServiceTest {
 			System.out.println("NVS = " + nvs);
 			System.out.println("Fail Count = " + count);
 			assertEquals(30.0, nvs, 0.1);
-			assertNull(count);
+			assertEquals(0, count);
 		}
 	}
 }
