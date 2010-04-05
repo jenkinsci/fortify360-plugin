@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import static org.junit.Assert.*;
 
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.jvnet.hudson.plugins.fortify360.FPRSummary;
 import org.jvnet.hudson.plugins.fortify360.RemoteService;
@@ -15,31 +16,24 @@ import org.apache.commons.io.FilenameUtils;
 public class RemoteServiceTest {
 
 	// if the machine don't have reportGenerator, we will by-pass these test cases
-	private boolean noReportGenerator;
+	private static boolean noReportGenerator;
 	
-	@Before
-	public void setUp() throws Exception {
-		noReportGenerator = false;
-		
-		try {
-			String os = System.getProperty("os.name");
-			String image = os.matches("Win.*|.*win.*") ? "reportGenerator.bat" : "reportGenerator";
+	// the NVS for old version and new version are different
+	private static boolean useNewFPO;
 	
-			ArrayList<String> cmd = new ArrayList<String>();
-			cmd.add(image);
-			cmd.add("-help"); // no such option, but this is fine
-			
-			ProcessBuilder pb = new ProcessBuilder(cmd);
-			Process proc = pb.start();
-			proc.waitFor();
-			
-		} catch (IOException e) {
-			if ( e.getMessage().startsWith("CreateProcess:") ) {
-				noReportGenerator = true;
-				System.out.println("Test bypassed because reportGenerator was not found");
-			}
+	@BeforeClass
+	public static void setUp() throws Exception {
+		noReportGenerator = !SCAMetaInfo.hasReportGenerator();
+		if ( noReportGenerator ) {
+			System.out.println("Test bypassed because reportGenerator was not found");			
 		}
-
+		
+		useNewFPO = SCAMetaInfo.isNewFPO();
+		if ( useNewFPO ) {
+			System.out.println("Calculate NVS base on Critical/High/Medium/Low");
+		} else {
+			System.out.println("Calculate NVS base on Hot/Warning/Info");
+		}
 	}
 
 	private File resourceToFile(String filename) throws IOException {
@@ -70,8 +64,13 @@ public class RemoteServiceTest {
 			Integer count = summary.getFailedCount();
 			System.out.println("NVS = " + nvs);
 			System.out.println("Fail Count = " + count);
-			assertEquals(95.52, nvs, 0.1);
-			assertEquals(0, count);
+			if ( useNewFPO ) {
+				assertEquals(113.65, nvs, 0.1);
+				assertEquals(0, count);
+			} else {
+				assertEquals(95.52, nvs, 0.1);
+				assertEquals(0, count);				
+			}
 		}
 	}
 
@@ -81,14 +80,27 @@ public class RemoteServiceTest {
 			String fpr = "WebGoat_Audited.fpr";
 			File fprFile = resourceToFile(fpr);
 			File path = fprFile.getParentFile();
-			RemoteService service = new RemoteService(fprFile.getName(), "Likely", "[fortify priority order]:high category:/SQL Injection|Cross-Site Scripting/");
+			
+			String search = null;
+			if ( useNewFPO ) {
+				search = "[fortify priority order]:critical category:/SQL Injection|Cross-Site Scripting/";
+ 			} else {
+ 				search = "[fortify priority order]:high category:/SQL Injection|Cross-Site Scripting/";
+ 			}
+			
+			RemoteService service = new RemoteService(fprFile.getName(), "Likely", search);
 			FPRSummary summary = service.invoke(path, null);
 			double nvs = summary.getNvs();
 			Integer count = summary.getFailedCount();
 			System.out.println("NVS = " + nvs);
 			System.out.println("Fail Count = " + count);
-			assertEquals(413.25, nvs, 0.1);
-			assertEquals(139, count);
+			if ( useNewFPO ) {
+				assertEquals(434.65, nvs, 0.1);
+				assertEquals(148, count);
+			} else {
+				assertEquals(413.25, nvs, 0.1);
+				assertEquals(139, count);				
+			}
 		}
 	}
 	

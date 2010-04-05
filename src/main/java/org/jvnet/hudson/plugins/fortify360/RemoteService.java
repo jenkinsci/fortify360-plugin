@@ -38,21 +38,28 @@ public class RemoteService implements FilePath.FileCallable<FPRSummary> {
 			if ( null == realFPR ) {
 				throw new RuntimeException("Can't locate FPR file");
 			}
-			String fprFullPath = realFPR.getAbsolutePath(); 
-			template = saveReportTemplate();
-			outputXml = createXMLReport(realFPR, template, filterSet);
-			double nvs = calculateNvsFromReport(outputXml);	
-			
+			String fprFullPath = realFPR.getAbsolutePath();
 			summary.setFprFullPath(fprFullPath);
-			summary.setNvs(nvs);
 			
-			if ( !isEmpty(searchCondition) ) {
-				template2 = saveReportTemplate(true, searchCondition);
-				outputXml2 = createXMLReport(realFPR, template2, filterSet);
-				int count = getCountFromReport(outputXml2);	
-				if ( count > 0 ) {
-					summary.setFailedCount(count);
+			if ( SCAMetaInfo.hasReportGenerator() ) {
+				template = saveReportTemplate();
+				outputXml = createXMLReport(realFPR, template, filterSet);
+				double nvs = calculateNvsFromReport(outputXml);	
+				summary.setNvs(nvs);
+			
+				if ( !isEmpty(searchCondition) ) {
+					template2 = saveReportTemplate(true, searchCondition);
+					outputXml2 = createXMLReport(realFPR, template2, filterSet);
+					int count = getCountFromReport(outputXml2);	
+					if ( count > 0 ) {
+						summary.setFailedCount(count);
+					}
 				}
+				
+			} else {
+				// no reportGenerator
+				// summary.setNvs(0.0);
+				// summary.setFailedCount(0);
 			}
 			
 		} catch (InterruptedException e) {
@@ -152,6 +159,23 @@ public class RemoteService implements FilePath.FileCallable<FPRSummary> {
 		return outputXml;
 	}
 	
+	/** Calculate NSF of the FPR
+	 * <p>For SCA 5.7, the NVS equation is
+	 * <br/> NVS = ((((HFPO*10)+(MFPO*1)+(LFPO*.01))*.5)+(((P1*2)+P2*4)+(P3*16)+(PABOVE*64))*.5))/(ExecutableLOC/1000)
+	 * </p>
+	 * <p>For SCA 5.8 (F360 v2.5), Fortify Priortify Order changed to Critical/High/Medium/Low, no NVS
+	 * <br/> I can do two things:
+	 * </p>
+	 * <ul>
+	 *   <li>Critical = 100, High = 10, Medium = 1, Low = 0.1, this is easier to implement, but value is heavily biased to Critical (1000 times of Low)</li>
+	 *   <li>Critical = 12.5, High = 2.5, Medium = 0.5, Low = 0.1, Critical/Low is 125 only, but not compatible with old equation</li>
+	 * </ul>
+	 * <p>I choose equation (2) since I think that is a better equation</p> 
+	 * 
+	 * @param outputXml
+	 * @return
+	 * @throws DocumentException
+	 */
 	@SuppressWarnings({ "unchecked", "unchecked" })
 	private static double calculateNvsFromReport(File outputXml) throws DocumentException {
 		SAXReader reader = new SAXReader();
@@ -174,10 +198,22 @@ public class RemoteService implements FilePath.FileCallable<FPRSummary> {
 			
 			// System.out.println(title + " " + count);
 			
-			if ( "High".equalsIgnoreCase(title) ) {
-				nvs += 0.5*10*Integer.parseInt(count);
+			boolean newFPO = false;
+			try {
+				newFPO = SCAMetaInfo.isNewFPO();
+			} catch ( Exception e ) {
+				System.out.println("Error checking SCA version: " + e.getMessage());
+			}
+			
+			// there is no NVS in SCA 5.8, I personally change the NVS to Critical vulnerability * 100
+			if ( "Critical".equalsIgnoreCase(title) ) {
+				nvs += 0.5*12.5*Integer.parseInt(count);
+			} if ( "High".equalsIgnoreCase(title) ) {
+				if ( newFPO ) nvs += 0.5*2.5*Integer.parseInt(count);
+				else          nvs += 0.5*10*Integer.parseInt(count);
 			} else if ( "Medium".equalsIgnoreCase(title) ) {
-				nvs += 0.5*Integer.parseInt(count);
+				if ( newFPO ) nvs += 0.5*0.5*Integer.parseInt(count);
+				else          nvs += 0.5*Integer.parseInt(count);
 			} else if ( "Low".equalsIgnoreCase(title) ) {
 				nvs += 0.5*0.1*Integer.parseInt(count);
 			} else if ( "Reliability Issue".equalsIgnoreCase(title) ) {
@@ -213,7 +249,10 @@ public class RemoteService implements FilePath.FileCallable<FPRSummary> {
 			
 			// System.out.println(title + " " + count);
 			
-			if ( "High".equalsIgnoreCase(title) ) {
+			// this works for both SCA 5.7 and 5.8
+			if ( "Critical".equalsIgnoreCase(title) ) {
+				total += Integer.parseInt(count);
+			} else if ( "High".equalsIgnoreCase(title) ) {
 				total += Integer.parseInt(count);
 			} else if ( "Medium".equalsIgnoreCase(title) ) {
 				total += Integer.parseInt(count);

@@ -12,11 +12,6 @@ public class FPRSummary {
 	private Double nvs;
 	private Integer failedCount;
 	
-	/* Not used at the monent */
-	private Integer hot;
-	private Integer warning;
-	private Integer info;
-	
 	public FPRSummary() { 
 		nvs = 0.0;
 		failedCount = 0;
