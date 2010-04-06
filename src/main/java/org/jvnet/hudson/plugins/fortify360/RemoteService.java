@@ -163,14 +163,8 @@ public class RemoteService implements FilePath.FileCallable<FPRSummary> {
 	 * <p>For SCA 5.7, the NVS equation is
 	 * <br/> NVS = ((((HFPO*10)+(MFPO*1)+(LFPO*.01))*.5)+(((P1*2)+P2*4)+(P3*16)+(PABOVE*64))*.5))/(ExecutableLOC/1000)
 	 * </p>
-	 * <p>For SCA 5.8 (F360 v2.5), Fortify Priortify Order changed to Critical/High/Medium/Low, no NVS
-	 * <br/> I can do two things:
-	 * </p>
-	 * <ul>
-	 *   <li>Critical = 100, High = 10, Medium = 1, Low = 0.1, this is easier to implement, but value is heavily biased to Critical (1000 times of Low)</li>
-	 *   <li>Critical = 12.5, High = 2.5, Medium = 0.5, Low = 0.1, Critical/Low is 125 only, but not compatible with old equation</li>
-	 * </ul>
-	 * <p>I choose equation (2) since I think that is a better equation</p> 
+	 * <p>For SCA 5.8 (F360 v2.5), according to Deprecation Note Normalized Vulnerability Score
+	 * <br/> NVS = ((((CFPO*10)+(HFPO*5)+(MFPO*1)+(LFPO*0.1))*.5)+(((P1*2)+(P2*4)+(P3*16)+(PABOVE*64))*.5))/(ExecutableLOC/1000)
 	 * 
 	 * @param outputXml
 	 * @return
@@ -205,16 +199,17 @@ public class RemoteService implements FilePath.FileCallable<FPRSummary> {
 				System.out.println("Error checking SCA version: " + e.getMessage());
 			}
 			
-			// there is no NVS in SCA 5.8, I personally change the NVS to Critical vulnerability * 100
 			if ( "Critical".equalsIgnoreCase(title) ) {
-				nvs += 0.5*12.5*Integer.parseInt(count);
+				nvs += 0.5*10*Integer.parseInt(count);
 			} if ( "High".equalsIgnoreCase(title) ) {
-				if ( newFPO ) nvs += 0.5*2.5*Integer.parseInt(count);
+				if ( newFPO ) nvs += 0.5*5*Integer.parseInt(count);
 				else          nvs += 0.5*10*Integer.parseInt(count);
 			} else if ( "Medium".equalsIgnoreCase(title) ) {
-				if ( newFPO ) nvs += 0.5*0.5*Integer.parseInt(count);
-				else          nvs += 0.5*Integer.parseInt(count);
+				// both newFPO and oldFPO are 1
+				nvs += 0.5*Integer.parseInt(count);
 			} else if ( "Low".equalsIgnoreCase(title) ) {
+				// oldFPO equation is 0.01, I think that's a typo
+				// newFPO is 0.1
 				nvs += 0.5*0.1*Integer.parseInt(count);
 			} else if ( "Reliability Issue".equalsIgnoreCase(title) ) {
 				nvs += 0.5*2*Integer.parseInt(count);

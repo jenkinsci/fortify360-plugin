@@ -65,7 +65,7 @@ public class RemoteServiceTest {
 			System.out.println("NVS = " + nvs);
 			System.out.println("Fail Count = " + count);
 			if ( useNewFPO ) {
-				assertEquals(113.65, nvs, 0.1);
+				assertEquals(107.34, nvs, 0.1);
 				assertEquals(0, count);
 			} else {
 				assertEquals(95.52, nvs, 0.1);
@@ -95,7 +95,7 @@ public class RemoteServiceTest {
 			System.out.println("NVS = " + nvs);
 			System.out.println("Fail Count = " + count);
 			if ( useNewFPO ) {
-				assertEquals(434.65, nvs, 0.1);
+				assertEquals(431.75, nvs, 0.1);
 				assertEquals(148, count);
 			} else {
 				assertEquals(413.25, nvs, 0.1);
