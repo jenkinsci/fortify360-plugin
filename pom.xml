@@ -12,7 +12,7 @@
   <groupId>org.jvnet.hudson.plugins.fortify360</groupId>
   <artifactId>fortify360</artifactId>
   <name>Fortify 360 Plugin</name>
-  <version>1.3-SNAPSHOT</version>
+  <version>1.3</version>
   <packaging>hpi</packaging>
   <organization>
   	<name>Fortify Software Inc</name>
@@ -26,8 +26,8 @@
       <email>samngms@yahoo.com</email>
       <timezone>+8</timezone>
     </developer>
-  </developers>  
-
+  </developers>
+  
   <!-- get every artifact through maven.glassfish.org, which proxies all the artifacts that we need
   <repositories>
     <repository>
@@ -43,4 +43,10 @@
     </pluginRepository>
   </pluginRepositories>
   -->
+
+  <scm>
+    <connection>scm:svn:https://guest@svn.dev.java.net/svn/hudson/tags/fortify360-1.3</connection>
+    <developerConnection>scm:svn:https://svn.dev.java.net/svn/hudson/tags/fortify360-1.3</developerConnection>
+    <url>https://hudson.dev.java.net/source/browse/hudson/hudson/plugins/fortify360/tags/fortify360-1.3</url>
+  </scm>
 </project>
