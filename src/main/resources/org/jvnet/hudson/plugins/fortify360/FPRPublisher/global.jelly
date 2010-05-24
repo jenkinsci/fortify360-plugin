@@ -2,12 +2,12 @@
   <f:section title="Fortify 360">
     <f:entry title="URL"
       description="Fortify 360 Server URL"
-      help="${rootURL}/plugin/fortify360/help-f360url.html">
+      help="/plugin/fortify360/help-f360url.html">
       <f:textbox name="url" value="${descriptor.url}" />
     </f:entry>
     <f:entry title="Token"
       description="Fortify 360 Server FPR Upload Token"
-      help="${rootURL}/plugin/fortify360/help-f360token.html">
+      help="/plugin/fortify360/help-f360token.html">
       <f:textbox name="token" value="${descriptor.token}" />
     </f:entry>
   </f:section>

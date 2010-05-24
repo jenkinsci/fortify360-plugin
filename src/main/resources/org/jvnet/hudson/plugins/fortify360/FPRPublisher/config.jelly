@@ -1,14 +1,14 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
-  <f:entry title="FPR Filename" field="fpr" help="${rootURL}/plugin/fortify360/help-fpr.html">
+  <f:entry title="FPR Filename" field="fpr" help="/plugin/fortify360/help-fpr.html">
     <f:textbox field="fpr" />
   </f:entry>
-  <f:entry title="FilterSet" field="filterSet" help="${rootURL}/plugin/fortify360/help-filterSet.html">
+  <f:entry title="FilterSet" field="filterSet" help="/plugin/fortify360/help-filterSet.html">
     <f:textbox field="filterSet" />
   </f:entry>
-  <f:entry title="Fail Condition" field="searchCondition" help="${rootURL}/plugin/fortify360/help-search.html">
+  <f:entry title="Fail Condition" field="searchCondition" help="/plugin/fortify360/help-search.html">
     <f:textbox field="searchCondition" />
   </f:entry>
-  <f:entry title="Fortify 360 Server Project Id" field="f360projId" help="${rootURL}/plugin/fortify360/help-f360projId.html">
+  <f:entry title="Fortify 360 Server Project Id" field="f360projId" help="/plugin/fortify360/help-f360projId.html">
     <f:textbox field="f360projId" />
   </f:entry>
 </j:jelly>
