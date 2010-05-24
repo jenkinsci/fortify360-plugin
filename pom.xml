@@ -12,7 +12,7 @@
   <groupId>org.jvnet.hudson.plugins.fortify360</groupId>
   <artifactId>fortify360</artifactId>
   <name>Fortify 360 Plugin</name>
-  <version>1.4-SNAPSHOT</version>
+  <version>1.4</version>
   <packaging>hpi</packaging>
   <organization>
   	<name>Fortify Software Inc</name>
@@ -43,4 +43,10 @@
     </pluginRepository>
   </pluginRepositories>
   -->
+
+  <scm>
+    <connection>scm:svn:https://guest@svn.dev.java.net/svn/hudson/tags/fortify360-1.4</connection>
+    <developerConnection>scm:svn:https://svn.dev.java.net/svn/hudson/tags/fortify360-1.4</developerConnection>
+    <url>https://hudson.dev.java.net/source/browse/hudson/hudson/plugins/fortify360/tags/fortify360-1.4</url>
+  </scm>
 </project>
