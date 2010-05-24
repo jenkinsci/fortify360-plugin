@@ -3,7 +3,10 @@ package org.jvnet.hudson.plugins.fortify360;
 import java.io.*;
 
 import hudson.*;
+import hudson.remoting.Callable;
+import hudson.remoting.VirtualChannel;
 import hudson.tasks.*;
+import hudson.FilePath.FileCallable;
 import hudson.model.*;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -87,7 +90,9 @@ public class FPRPublisher extends Recorder {
 		RemoteService service = new RemoteService(fpr, filterSet, searchCondition);
 		FPRSummary summary = build.getWorkspace().act(service);
 		
-		log.printf("Using FPR: %s\n", summary.getFprFullPath());
+		//log.printf("Using FPR: %s\n", summary.getFprFullPath());
+		FilePath fprFile = summary.getFprFile();
+		log.printf("Using FPR: %s\n", (null != fprFile) ? fprFile.toURI() : "null");
 		log.printf("Calculated NVS = %f\n", summary.getNvs());
 		
 		// save data under the builds directory, this is always in Hudson master node
@@ -97,8 +102,14 @@ public class FPRPublisher extends Recorder {
 		// if the project ID is not null, then we need to upload the FPR to 360 server
 		if ( null != f360projId && DESCRIPTOR.canUploadToF360() ) {
 			// the FPR may be in remote slave, we need to call launcher to do this for me
-			log.printf("Uploading FPR to Fortify 360 Server at %s\n", DESCRIPTOR.getUrl());
-			uploadToF360(summary.getFprFullPath(), launcher);
+			if ( null == fprFile ) {
+				log.printf("Can't upload FPR to Fortify 360 Server, FPR File is NULL");
+			} else {
+				log.printf("Uploading FPR to Fortify 360 Server at %s\n", DESCRIPTOR.getUrl());
+				//uploadToF360(summary.getFprFullPath(), launcher);
+				UploadFprService uploadService = new UploadFprService(DESCRIPTOR.getUrl(), DESCRIPTOR.getToken(), f360projId);
+				fprFile.act(uploadService);
+			}
 		}
 		
 		// now check if the fail count
@@ -111,24 +122,6 @@ public class FPRPublisher extends Recorder {
 		}
 		
 		return true;
-	}
-	
-	private void uploadToF360(String fprFullPath, Launcher launcher) throws IOException {
-		// fortifyclient uploadFPR –projectID <proj_ID> -file XXX.fpr -url http://fortify.ca.com:8080/f360 -authtoken XXXX
-		String array[] = {"fortifyclient", "uploadFPR", "-projectID", "unknown", "-file", "unknown", "-url", "unknown", "-authtoken", "unknown"};
-		
-		String os = System.getProperty("os.name");
-		String image = os.matches("Win.*|.*win.*") ? "fortifyclient.bat" : "fortifyclient";
-		array[0] = image;
-		
-		array[3] = f360projId.toString();   // project Id
-		array[5] = fprFullPath;             // fpr
-		array[7] = DESCRIPTOR.getUrl();     // F360 server url
-		array[9] = DESCRIPTOR.getToken();   // authentication token
-		
-		Launcher.ProcStarter proc = launcher.launch();
-		proc.cmds(array);
-		proc.start();		
 	}
 	
 	@Extension

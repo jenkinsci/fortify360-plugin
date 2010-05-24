@@ -38,8 +38,9 @@ public class RemoteService implements FilePath.FileCallable<FPRSummary> {
 			if ( null == realFPR ) {
 				throw new RuntimeException("Can't locate FPR file");
 			}
-			String fprFullPath = realFPR.getAbsolutePath();
-			summary.setFprFullPath(fprFullPath);
+			//String fprFullPath = realFPR.getAbsolutePath();
+			//summary.setFprFullPath(fprFullPath);
+			summary.setFprFile(new FilePath(realFPR));
 			
 			if ( SCAMetaInfo.hasReportGenerator() ) {
 				template = saveReportTemplate();

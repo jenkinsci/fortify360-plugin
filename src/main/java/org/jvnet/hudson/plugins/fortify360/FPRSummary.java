@@ -1,14 +1,18 @@
 package org.jvnet.hudson.plugins.fortify360;
 
+import hudson.FilePath;
 import hudson.XmlFile;
 
 import java.io.*;
 
-public class FPRSummary {
+public class FPRSummary implements Serializable {
 	
+	private static final long serialVersionUID = 1L;
+
 	public final static String FILE_BASENAME = "fortify360_plugin.xml";
 	
-	private String fprFullPath;
+	//private String fprFullPath;
+	private FilePath fprFile;
 	private Double nvs;
 	private Integer failedCount;
 	
@@ -36,13 +40,21 @@ public class FPRSummary {
 		this.nvs = nvs;
 	}
 
-	public String getFprFullPath() {
-		return fprFullPath;
+	public FilePath getFprFile() {
+		return fprFile;
 	}
 
-	public void setFprFullPath(String fprFullPath) {
-		this.fprFullPath = fprFullPath;
+	public void setFprFile(FilePath fprFile) {
+		this.fprFile = fprFile;
 	}
+	
+//	public String getFprFullPath() {
+//		return fprFullPath;
+//	}
+//
+//	public void setFprFullPath(String fprFullPath) {
+//		this.fprFullPath = fprFullPath;
+//	}
 
 	public Integer getFailedCount() {
 		return failedCount;
