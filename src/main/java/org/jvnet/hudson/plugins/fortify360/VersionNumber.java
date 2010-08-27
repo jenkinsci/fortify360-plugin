@@ -1,5 +1,16 @@
 package org.jvnet.hudson.plugins.fortify360;
 
+/** A simple case to handle version number comparison
+ * <p>
+ * Only accept numbers in the version number, e.g. 1.2.3.4. Doesn't support alphabets, e.g. 1.2.4a
+ * <p>
+ * E.g. 1.10 is large than 1.2 <br/>
+ * E.g. 1.2.1 is large than 1.2
+ * 
+ * @author sng
+ *
+ */
+@SuppressWarnings("unchecked")
 public class VersionNumber implements Comparable {
 	
 	private int[] version;

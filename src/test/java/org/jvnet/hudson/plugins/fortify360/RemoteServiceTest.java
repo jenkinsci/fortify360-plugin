@@ -21,6 +21,7 @@ public class RemoteServiceTest {
 	// the NVS for old version and new version are different
 	private static boolean useNewFPO;
 	
+	/*
 	@BeforeClass
 	public static void setUp() throws Exception {
 		noReportGenerator = !SCAMetaInfo.hasReportGenerator();
@@ -154,4 +155,5 @@ public class RemoteServiceTest {
 			assertEquals(0, count);
 		}
 	}
+	*/
 }

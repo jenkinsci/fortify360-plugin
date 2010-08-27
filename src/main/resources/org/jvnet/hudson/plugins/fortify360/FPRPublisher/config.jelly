@@ -9,6 +9,36 @@
     <f:textbox field="searchCondition" />
   </f:entry>
   <f:entry title="Fortify 360 Server Project Id" field="f360projId" help="/plugin/fortify360/help-f360projId.html">
-    <f:textbox field="f360projId" />
+    <j:choose>
+      <j:when test="${descriptor.f360projList != null}">
+		<script type="text/javascript" src="/plugin/fortify360/refresh-f360-projects.js"/>
+        <select id="f360projId" name="f360projId">
+          <j:forEach var="s" items="${descriptor.f360projList}">
+            <f:option value="${s.id}" selected="${instance.f360projId == s.id}">${s.name}</f:option>
+          </j:forEach>
+        </select>
+        <div style="float:right">
+          <input type="button" value="Refresh" class="yui-button" onclick="refreshF360Button('${rootURL}/descriptor/${descriptor.clazz.name}/refreshProjects','f360projId',this)" />
+        </div>
+        <div style="display:none;">
+          <img src="${imagesURL}/spinner.gif" /> ${progress}
+        </div>
+        <div><!-- this is where the error message goes --></div>
+      </j:when>
+      <j:otherwise>
+        <f:textbox field="f360projId" />
+      </j:otherwise>
+    </j:choose>
   </f:entry>
+  <f:advanced title="Auto Job Assignment">
+    <f:entry title="Audit Token" field="auditToken" help="/plugin/fortify360/help-auditToken.html">
+      <f:textbox field="auditToken" />
+    </f:entry>  
+    <f:entry title="Upload Wait Time" field="uploadWaitTime" help="/plugin/fortify360/help-uploadWait.html">
+      <f:textbox field="uploadWaitTime" />
+    </f:entry>
+    <f:entry title="Job Assignment Script" field="jsFile" help="/plugin/fortify360/help-auditScript.html">
+      <f:textarea field="auditScript" />
+    </f:entry>        	
+  </f:advanced>  
 </j:jelly>

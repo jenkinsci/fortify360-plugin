@@ -1,0 +1,136 @@
+<div>
+  <p>
+    The JavaScript to run the JobAssignment Task
+  </p>
+  <p>
+  	Three variables will be passed to the Javascript as built-in variables
+  	<ul>
+  		<li><b>users</b>: Java datatype is Set&lt;String&gt;, the Set of all the authorized F360 Server logins for this projectId</li>
+  		<li><b>changeLog</b>: Java datatype is Map&lt;String filename, String user&gt;, the changeLog when this job is run</li>
+  		<li><b>issues</b>: Java datatype ius List&lt;Issue&gt; (see below), the list of all issues retrieved from F360 Server <u>after</u> upload the FPR to F360 Server (therefore, contains all the latest scan results). The filterset is the same as the previous form field "FilterSet"</li>
+  	</ul>
+  </p>
+  <p>
+    <b>Issue</b> Datatype
+  </p>
+  <table border="1">
+  	<tr>
+      <td>Return Type</td><td>Method Name</td><td>Description</td>
+  	</tr>
+  	<tr>
+      <td>void</td><td>setAssignedUser(String user)</td><td>Assign a particular issue to a particular user</td>
+    </tr>
+    <tr>
+      <td>void</td><td>addComment(String comment)</td><td>Append Threaded Comment to the issue</td>
+    </tr>
+    <tr>
+      <td>String</td><td>getInstanceId()</td><td>Instacne Id, e.g. 9099D33FE61D0D1287401FB105FD341F</td>
+    </tr>
+    <tr>
+      <td>String</td><td>getAssignedUser()</td><td>Get the existing assigned user loginID</td>
+    </tr>
+    <tr>
+      <td>int</td><td>getRevision()</td><td></td>
+    </tr>
+    <tr>
+      <td>List&lt;Tag&gt;</td><td>getTag()</td><td></td>
+    </tr>
+    <tr>
+      <td>boolean</td><td>isSuppressed()</td><td>Always false, because the issue list does not contain any suppressed item</td>
+    </tr>
+    <tr>
+      <td>List&lt;String&gt;</td><td>getThreadComments()</td><td>Get all threaded comments as a List of String, each line is in the format of <i>Username Timestamp: Content</i></td>
+    </tr>
+    <tr>
+      <td>String</td><td>getAnalysisEngine()</td><td>e.g. SCA, RTA, PTA</td>
+    </tr>
+    <tr>
+      <td>String</td><td>getAnalyzer()</td><td>e.g. Dataflow, Controlflow, etc..</td>
+    </tr>
+    <tr>
+      <td>String</td><td>getCategory()</td><td>e.g. SQL Injection</td>
+    </tr>
+    <tr>
+      <td>String</td><td>getCWE()</td><td></td>
+    </tr>
+    <tr>
+      <td>String</td><td>getKingdom()</td><td></td>
+    </tr>
+    <tr>
+      <td>String</td><td>getOWASP2004()</td><td></td>
+    </tr>
+    <tr>
+      <td>String</td><td>getOWASP2007()</td><td></td>
+    </tr>
+    <tr>
+      <td>String</td><td>getRuleId()</td><td></td>
+    </tr>
+    <tr>
+      <td>String</td><td>getSubType()</td><td>For Cross Site Scripting, this can be "Reflected" or "Persistent"</td>
+    </tr>
+    <tr>
+      <td>String</td><td>getType()</td><td></td>
+    </tr>
+    <tr>
+      <td>String</td><td>getWASC24And2()</td><td></td>
+    </tr>
+    <tr>
+      <td>double</td><td>getConfidence()</td><td>A floating point between 0.0 to 5.0</td>
+    </tr>
+    <tr>
+      <td>double</td><td>getSeverity()</td><td>A integer from 1 to 5, 5 meaning very important</td>
+    </tr>
+    <tr>
+      <td>String</td><td>getSinkFunction()</td><td></td>
+    </tr>
+    <tr>
+      <td>String</td><td>getSourceFunction()</td><td></td>
+    </tr>
+    <tr>
+      <td>String</td><td>getClassName()</td><td></td>
+    </tr>
+    <tr>
+      <td>String</td><td>getFilePath()</td><td></td>
+    </tr>
+    <tr>
+      <td>String</td><td>getFunction()</td><td></td>
+    </tr>
+    <tr>
+      <td>int</td><td>getLineNumber()</td><td>The priminary line number, -1 if unknown</td>
+    </tr>
+    <tr>
+      <td>String</td><td>getPackage()</td><td>Package name, e.g. com.mypackage1.project1</td>
+    </tr>
+    <tr>
+      <td>String</td><td>getSourceFilePath()</td><td></td>
+    </tr>
+    <tr>
+      <td>String</td><td>getURL()</td><td></td>
+    </tr>
+  </table>
+  <p>
+  	<b>Exampe:</b>  	
+  </p>
+  <table border="1"><tr><td> 
+  <pre><font face="Courier New">
+var size = issues.size();
+for(var i=0; i&lt;size; i++) {
+	var instance = issues.get(i);
+	// only assign if it is not aissigned 
+	if ( null == instance.getAssignedUser() ) {
+		var filepath = instance.getFilePath();
+		// need to prefixe with "/trunk/" for SVN...
+		var lastUser = changeLog.get("/trunk/" + filepath);
+		// and make sure this user is an authorized user in F360 server
+		if ( null != lastUser && users.contains(lastUser) ) {
+			instance.setAssignedUser(lastUser);
+			instance.addComment("Auto-assigned to " + lastUser + " since the file is last modified by the user");
+		} else {
+			print(lastUser + " modified " + filepath + " but is not an authorized developer\n");
+		}
+	}
+}  
+  </font>
+  </pre>
+  </td></tr></table>
+</div>

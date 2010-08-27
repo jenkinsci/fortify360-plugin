@@ -63,4 +63,5 @@ public class FPRSummary implements Serializable {
 	public void setFailedCount(Integer failedCount) {
 		this.failedCount = failedCount;
 	}
+
 }

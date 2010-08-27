@@ -20,11 +20,19 @@ public class RemoteService implements FilePath.FileCallable<FPRSummary> {
 	private String fpr;
 	private String filterSet;
 	private String searchCondition;
+
+	private StringBuilder logStr;
+	private StringWriter strWriter;
+	private PrintWriter log;
 	
-	public RemoteService(String fpr, String filterSet, String searchCondition) {
+	public RemoteService(String fpr, String filterSet, String searchCondition, StringBuilder logStr) {
 		this.fpr = fpr;
 		this.filterSet = filterSet;
 		this.searchCondition = searchCondition;
+		
+		this.logStr = logStr;
+		this.strWriter = new StringWriter();
+		this.log = new PrintWriter(strWriter);
 	}
 	
 	public FPRSummary invoke(File workspace, VirtualChannel channel) throws IOException {
@@ -44,13 +52,13 @@ public class RemoteService implements FilePath.FileCallable<FPRSummary> {
 			
 			if ( SCAMetaInfo.hasReportGenerator() ) {
 				template = saveReportTemplate();
-				outputXml = createXMLReport(realFPR, template, filterSet);
-				double nvs = calculateNvsFromReport(outputXml);	
+				outputXml = createXMLReport(realFPR, template, filterSet, log);
+				double nvs = calculateNvsFromReport(outputXml, log);	
 				summary.setNvs(nvs);
 			
 				if ( !isEmpty(searchCondition) ) {
 					template2 = saveReportTemplate(true, searchCondition);
-					outputXml2 = createXMLReport(realFPR, template2, filterSet);
+					outputXml2 = createXMLReport(realFPR, template2, filterSet, log);
 					int count = getCountFromReport(outputXml2);	
 					if ( count > 0 ) {
 						summary.setFailedCount(count);
@@ -77,6 +85,11 @@ public class RemoteService implements FilePath.FileCallable<FPRSummary> {
 			deleteFile(outputXml);
 			deleteFile(template2);
 			deleteFile(outputXml2);
+			try { 
+				logStr.append(strWriter.toString());
+			} catch ( Exception e ) {
+				e.printStackTrace();
+			}
 		}
 		return summary;
 	}
@@ -123,7 +136,7 @@ public class RemoteService implements FilePath.FileCallable<FPRSummary> {
 		}
 	}
 	
-	private static File createXMLReport(File fpr, File template, String filterSet) throws InterruptedException, IOException {		
+	private static File createXMLReport(File fpr, File template, String filterSet, PrintWriter log) throws InterruptedException, IOException {		
 		String os = System.getProperty("os.name");
 		// Win: the name is reportGenerator.bat
 		// Linux: the name is ReportGenerator (case sensitive)
@@ -147,7 +160,7 @@ public class RemoteService implements FilePath.FileCallable<FPRSummary> {
 		}
 		
 		ProcessBuilder pb = new ProcessBuilder(cmd);
-		System.out.println("EXE: " + cmd.toString());
+		log.println("EXE: " + cmd.toString());
 		Process proc = pb.start();
 		proc.waitFor();
 		int exitValue = proc.exitValue();
@@ -172,7 +185,7 @@ public class RemoteService implements FilePath.FileCallable<FPRSummary> {
 	 * @throws DocumentException
 	 */
 	@SuppressWarnings({ "unchecked", "unchecked" })
-	private static double calculateNvsFromReport(File outputXml) throws DocumentException {
+	private static double calculateNvsFromReport(File outputXml, PrintWriter log) throws DocumentException {
 		SAXReader reader = new SAXReader();
 		Document document = reader.read(outputXml);
 		
@@ -197,7 +210,7 @@ public class RemoteService implements FilePath.FileCallable<FPRSummary> {
 			try {
 				newFPO = SCAMetaInfo.isNewFPO();
 			} catch ( Exception e ) {
-				System.out.println("Error checking SCA version: " + e.getMessage());
+				log.println("Error checking SCA version: " + e.getMessage());
 			}
 			
 			if ( "Critical".equalsIgnoreCase(title) ) {
