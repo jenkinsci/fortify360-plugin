@@ -5,6 +5,8 @@ import hudson.XmlFile;
 
 import java.io.*;
 
+import org.apache.commons.lang.StringUtils;
+
 public class FPRSummary implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
@@ -15,8 +17,10 @@ public class FPRSummary implements Serializable {
 	private FilePath fprFile;
 	private Double nvs;
 	private Integer failedCount;
+	private String logMsg;
 	
 	public FPRSummary() { 
+		fprFile = null;
 		nvs = 0.0;
 		failedCount = 0;
 	}
@@ -63,5 +67,16 @@ public class FPRSummary implements Serializable {
 	public void setFailedCount(Integer failedCount) {
 		this.failedCount = failedCount;
 	}
-
+	
+	public void log(String msg) {
+		if ( null == logMsg ) {
+			logMsg = msg;
+		} else if ( null != msg ) {
+			this.logMsg += msg;
+		}
+	}
+	
+	public String getLogMessage() {
+		return logMsg;
+	}
 }

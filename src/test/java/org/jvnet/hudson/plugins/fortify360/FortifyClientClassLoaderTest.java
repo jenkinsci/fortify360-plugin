@@ -3,6 +3,7 @@ package org.jvnet.hudson.plugins.fortify360;
 import static org.junit.Assert.*;
 import java.io.File;
 import java.io.IOException;
+import java.net.ConnectException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 
@@ -15,32 +16,21 @@ import org.junit.Test;
 
 public class FortifyClientClassLoaderTest {
 	
-	@Test
-	public void testMd5() throws NoSuchAlgorithmException, IOException {
-		//aeb7869405a91b3f9d3e173d4b669f66 *test1.fpr
-		//e429d498f0ce4a5f012b743cad78062c *webgoat_57.fpr
-		//eb1790a10e2311757adfcff24485b237 *WebGoat_Audited.fpr
-		String[] files = {"test1.fpr", "webgoat_57.fpr", "WebGoat_Audited.fpr"};
-		String[] md5s = {"aeb7869405a91b3f9d3e173d4b669f66", "e429d498f0ce4a5f012b743cad78062c", "eb1790a10e2311757adfcff24485b237"};
-		
-		for(int i=0; i<3; i++) {
-			File file = TestUtils.resourceToFile(files[i]);
-			String md5 = FortifyClientClassLoader.md5(file);
-			Assert.assertEquals(md5s[i], md5);
-		}
-	}
+	private static final String F360_PATH = "C:\\Program Files\\Fortify Software\\Fortify 360 v2.6.5\\Core\\lib";
+	private static final String F360_URL = "http://localhost:8180/f360/fm-ws/services";
+	private static final String F360_TOKEN = "9aa190e1-9f92-4aed-9438-a1a48d7f9153";
 	
 	@Test
 	public void testFindWSClientPath() throws IOException {
 		String path = FortifyClientClassLoader.findWSClientPath();
 		Assert.assertNotNull(path);
 		File file = new File(path);
-		Assert.assertEquals("C:\\Program Files\\Fortify Software\\Fortify 360 v2.6.0\\Core\\lib", file.getCanonicalPath());
+		Assert.assertEquals(F360_PATH, file.getCanonicalPath());
 	}
 
 	@Test
 	public void testGetInstance() throws Exception {
-		FortifyClientClassLoader loader = FortifyClientClassLoader.getInstance(null, null);
+		FortifyClientClassLoader loader = FortifyClientClassLoader.getInstance(null, null, System.out);
 		loader.bindCurrentThread();
 		try {
 			Object fortifyclient = loader.loadClass("org.jvnet.hudson.plugins.fortify360.fortifyclient.FortifyClient").newInstance();
@@ -52,12 +42,12 @@ public class FortifyClientClassLoaderTest {
 	
 	@Test
 	public void testGetProjectList() throws Exception {
-		FortifyClientClassLoader loader = FortifyClientClassLoader.getInstance(null, null);
+		FortifyClientClassLoader loader = FortifyClientClassLoader.getInstance(null, null, System.out);
 		loader.bindCurrentThread();
 		try {
 			Object fortifyclient = loader.loadClass("org.jvnet.hudson.plugins.fortify360.fortifyclient.FortifyClient").newInstance();
 			Assert.assertNotNull(fortifyclient);
-			MethodUtils.invokeMethod(fortifyclient, "init", new String[] {"http://localhost:8180/f360/fm-ws/services", "ef0f4237-b951-4e88-b550-0d44a266d643"});
+			MethodUtils.invokeMethod(fortifyclient, "init", new String[] {F360_URL, F360_TOKEN});
 			Object out = MethodUtils.invokeMethod(fortifyclient, "getProjectList", null);
 			Map<String, Long> map = (Map<String, Long>)out;
 			// as long as it is not null and map.size > 0, no exception thrown, that's fine
@@ -66,8 +56,23 @@ public class FortifyClientClassLoaderTest {
 			for(String s : map.keySet()) {
 				System.out.println("Project [: " + map.get(s) + "]: " + s);
 			}
+		} catch ( Exception e ) {
+			// if due to connection error, probably f360 server is not started up
+			if ( containsRootCause(e, ConnectException.class) ) {
+				// ignore it
+			} else {
+				throw e;
+			}
 		} finally {
 			loader.unbindCurrentThread();
 		}
 	}
+	
+	private boolean containsRootCause(Throwable t, Class c) {
+		while ( null != t ) {
+			t = t.getCause();
+			if ( null != t && c.isInstance(t) ) return true;
+		}
+		return  false;
+	}	
 }

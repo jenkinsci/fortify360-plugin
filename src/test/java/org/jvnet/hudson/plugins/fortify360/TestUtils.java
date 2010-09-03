@@ -3,6 +3,7 @@ package org.jvnet.hudson.plugins.fortify360;
 import java.io.*;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
+import org.junit.Test;
 
 public class TestUtils {
 	public static File resourceToFile(String filename) throws IOException {
@@ -20,4 +21,9 @@ public class TestUtils {
 			IOUtils.closeQuietly(out);
 		}
 	}
+	
+	@Test
+	public void dummy() {
+		// dummy 
+	}	
 }

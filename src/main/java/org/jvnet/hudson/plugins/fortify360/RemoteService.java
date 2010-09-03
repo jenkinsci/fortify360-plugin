@@ -1,6 +1,9 @@
 package org.jvnet.hudson.plugins.fortify360;
 
 import java.util.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipException;
+import java.util.zip.ZipFile;
 import java.io.*;
 
 import hudson.FilePath;
@@ -8,6 +11,7 @@ import hudson.remoting.VirtualChannel;
 
 import org.apache.commons.io.*;
 import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang.StringUtils;
 
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -20,19 +24,23 @@ public class RemoteService implements FilePath.FileCallable<FPRSummary> {
 	private String fpr;
 	private String filterSet;
 	private String searchCondition;
-
-	private StringBuilder logStr;
-	private StringWriter strWriter;
-	private PrintWriter log;
+	private String suggestedFortifyHome;
 	
-	public RemoteService(String fpr, String filterSet, String searchCondition, StringBuilder logStr) {
+	private StringBuilder logMsg;
+	
+	private String sourceanalyzerPath;
+	private String reportGeneratorPath;
+	
+	public RemoteService(String fpr, String filterSet, String searchCondition, String suggestedFortifyHome) {
 		this.fpr = fpr;
 		this.filterSet = filterSet;
 		this.searchCondition = searchCondition;
+		this.suggestedFortifyHome = suggestedFortifyHome;
 		
-		this.logStr = logStr;
-		this.strWriter = new StringWriter();
-		this.log = new PrintWriter(strWriter);
+		this.logMsg = new StringBuilder(); 
+		
+		this.sourceanalyzerPath = null;
+		this.reportGeneratorPath = null;
 	}
 	
 	public FPRSummary invoke(File workspace, VirtualChannel channel) throws IOException {
@@ -41,34 +49,50 @@ public class RemoteService implements FilePath.FileCallable<FPRSummary> {
 		File template2 = null;
 		File outputXml2 = null;
 		FPRSummary summary = new FPRSummary();
+		this.logMsg = new StringBuilder(); 
 		try {
+			// we have to locate the FPR even if we don't need to run re
 			File realFPR = locateFPR(workspace, fpr); 
 			if ( null == realFPR ) {
 				throw new RuntimeException("Can't locate FPR file");
 			}
-			//String fprFullPath = realFPR.getAbsolutePath();
-			//summary.setFprFullPath(fprFullPath);
 			summary.setFprFile(new FilePath(realFPR));
+
+			// locate sourceanalyzer
+			sourceanalyzerPath = locateSourceanalyzer(suggestedFortifyHome, logMsg);
+			if ( null == sourceanalyzerPath ) {
+				logMsg.append("Cannot locate sourceanalyzer, will skip plotting NVS chart\n");
+				copyLogMsgToFPRSummary(summary);		
+				return summary;
+			}
+			String versionStr = getSCAVersion(sourceanalyzerPath);
+			if ( null == versionStr ) {
+				logMsg.append("Cannot determine SCA version, will skip plotting NVS chart\n");
+				copyLogMsgToFPRSummary(summary);		
+				return summary;				
+			}
+			boolean useNewFPO = isNewFPO(versionStr);
 			
-			if ( SCAMetaInfo.hasReportGenerator() ) {
-				template = saveReportTemplate();
-				outputXml = createXMLReport(realFPR, template, filterSet, log);
-				double nvs = calculateNvsFromReport(outputXml, log);	
-				summary.setNvs(nvs);
+			// locate reportGenerator
+			reportGeneratorPath = locateReportGenerator(suggestedFortifyHome, logMsg); 
+			if ( null == reportGeneratorPath ) {
+				logMsg.append("Cannot locate reportGenerator, will skip plotting NVS chart\n");
+				copyLogMsgToFPRSummary(summary);		
+				return summary;
+			}			
 			
-				if ( !isEmpty(searchCondition) ) {
-					template2 = saveReportTemplate(true, searchCondition);
-					outputXml2 = createXMLReport(realFPR, template2, filterSet, log);
-					int count = getCountFromReport(outputXml2);	
-					if ( count > 0 ) {
-						summary.setFailedCount(count);
-					}
+			template = saveReportTemplate();
+			outputXml = createXMLReport(realFPR, template, filterSet);
+			double nvs = calculateNvsFromReport(outputXml, useNewFPO, logMsg);	
+			summary.setNvs(nvs);
+		
+			if ( !isEmpty(searchCondition) ) {
+				template2 = saveReportTemplate(true, searchCondition);
+				outputXml2 = createXMLReport(realFPR, template2, filterSet);
+				int count = getCountFromReport(outputXml2);	
+				if ( count > 0 ) {
+					summary.setFailedCount(count);
 				}
-				
-			} else {
-				// no reportGenerator
-				// summary.setNvs(0.0);
-				// summary.setFailedCount(0);
 			}
 			
 		} catch (InterruptedException e) {
@@ -80,18 +104,22 @@ public class RemoteService implements FilePath.FileCallable<FPRSummary> {
 			IOException x = new IOException();
 			x.initCause(e);
 			throw x;
-		} finally {
+		} finally {			
 			deleteFile(template);
 			deleteFile(outputXml);
 			deleteFile(template2);
-			deleteFile(outputXml2);
-			try { 
-				logStr.append(strWriter.toString());
-			} catch ( Exception e ) {
-				e.printStackTrace();
-			}
+			deleteFile(outputXml2);			
 		}
+
+		// setup log message to FPRSummary
+		copyLogMsgToFPRSummary(summary);		
 		return summary;
+	}
+	
+	private void copyLogMsgToFPRSummary(FPRSummary summary) {
+		String s = logMsg.toString();
+		if ( !StringUtils.isBlank(s) ) summary.log(s);		
+		logMsg = new StringBuilder();
 	}
 	
 	private static void deleteFile(File file) {
@@ -136,19 +164,12 @@ public class RemoteService implements FilePath.FileCallable<FPRSummary> {
 		}
 	}
 	
-	private static File createXMLReport(File fpr, File template, String filterSet, PrintWriter log) throws InterruptedException, IOException {		
-		String os = System.getProperty("os.name");
-		// Win: the name is reportGenerator.bat
-		// Linux: the name is ReportGenerator (case sensitive)
-		// I think we have reportGenerator on Mac, but not sure about the name
-		// other platforms: no such utility
-		String image = os.matches("Win.*|.*win.*") ? "reportGenerator.bat" : "ReportGenerator";
-		
+	private File createXMLReport(File fpr, File template, String filterSet) throws InterruptedException, IOException {		
 		File outputXml = File.createTempFile("report", ".xml");
 		
 		// reportGenerator -format xml -f xx.xml -template c:\issue_by_fpo.xml -source c:\WebGoat5.0\webgoat_57.fpr
 		ArrayList<String> cmd = new ArrayList<String>();
-		cmd.add(image);
+		cmd.add(reportGeneratorPath);
 		cmd.add("-format"); 	cmd.add("xml");
 		cmd.add("-f"); 			cmd.add(outputXml.getAbsolutePath());
 		cmd.add("-template"); 	cmd.add(template.getAbsolutePath());
@@ -160,7 +181,7 @@ public class RemoteService implements FilePath.FileCallable<FPRSummary> {
 		}
 		
 		ProcessBuilder pb = new ProcessBuilder(cmd);
-		log.println("EXE: " + cmd.toString());
+		logMsg.append("EXE: " + cmd.toString() + "\n");
 		Process proc = pb.start();
 		proc.waitFor();
 		int exitValue = proc.exitValue();
@@ -184,8 +205,8 @@ public class RemoteService implements FilePath.FileCallable<FPRSummary> {
 	 * @return
 	 * @throws DocumentException
 	 */
-	@SuppressWarnings({ "unchecked", "unchecked" })
-	private static double calculateNvsFromReport(File outputXml, PrintWriter log) throws DocumentException {
+	@SuppressWarnings("unchecked")
+	private static double calculateNvsFromReport(File outputXml, boolean useNewFPO, StringBuilder logMsg) throws DocumentException {
 		SAXReader reader = new SAXReader();
 		Document document = reader.read(outputXml);
 		
@@ -205,19 +226,12 @@ public class RemoteService implements FilePath.FileCallable<FPRSummary> {
 			String title = groupSectionNode.selectSingleNode("groupTitle").getText();
 			
 			// System.out.println(title + " " + count);
-			
-			boolean newFPO = false;
-			try {
-				newFPO = SCAMetaInfo.isNewFPO();
-			} catch ( Exception e ) {
-				log.println("Error checking SCA version: " + e.getMessage());
-			}
-			
+						
 			if ( "Critical".equalsIgnoreCase(title) ) {
 				nvs += 0.5*10*Integer.parseInt(count);
 			} if ( "High".equalsIgnoreCase(title) ) {
-				if ( newFPO ) nvs += 0.5*5*Integer.parseInt(count);
-				else          nvs += 0.5*10*Integer.parseInt(count);
+				if ( useNewFPO ) nvs += 0.5*5*Integer.parseInt(count);
+				else             nvs += 0.5*10*Integer.parseInt(count);
 			} else if ( "Medium".equalsIgnoreCase(title) ) {
 				// both newFPO and oldFPO are 1
 				nvs += 0.5*Integer.parseInt(count);
@@ -241,6 +255,7 @@ public class RemoteService implements FilePath.FileCallable<FPRSummary> {
 		return nvs;
 	}
 	
+	@SuppressWarnings("unchecked")
 	private static int getCountFromReport(File outputXml) throws DocumentException {
 		SAXReader reader = new SAXReader();
 		Document document = reader.read(outputXml);
@@ -306,6 +321,79 @@ public class RemoteService implements FilePath.FileCallable<FPRSummary> {
 	private static boolean isEmpty(String str) {
 		return ( null == str || str.length() == 0 );
 	}
-	
 
+
+	public static String locateReportGenerator(String suggestedFortifyHome, StringBuilder logMsg) {
+		String imageName = "reportGenerator";
+		return locateBinary(imageName, suggestedFortifyHome, logMsg);
+	}
+	
+	public static String locateSourceanalyzer(String suggestedFortifyHome, StringBuilder logMsg) {
+		String imageName = "sourceanalyzer";
+		return locateBinary(imageName, suggestedFortifyHome, logMsg);
+	}
+	
+	public static String locateBinary(String imageName, String suggestedFortifyHome, StringBuilder logMsg) {
+		File[] list = null; 
+		if ( null != suggestedFortifyHome ) {
+			list = PathUtils.findBasenameInFolder(suggestedFortifyHome, imageName);
+			if ( null != list && list.length > 0 ) 
+				logMsg.append("Found " + imageName + " by using JARs Path Fortify360 Plugin global confir\n");
+		}
+		if ( null == list || list.length == 0 ) {
+			String fortifyHome = System.getenv("FORTIFY_HOME");
+			if ( null != fortifyHome ) {
+				File bin = new File(fortifyHome, "bin");
+				if ( bin.exists() && bin.isDirectory() ) {
+					list = PathUtils.findBasenameInFolder(bin.toString(), imageName);
+					if ( null != list && list.length > 0 ) 
+						logMsg.append("Found " + imageName + " in FORTIFY_HOME environment variable\n");
+				}
+			}
+		}
+		if ( null == list || list.length == 0 ) {
+			list = PathUtils.locateBaesnameInPath(imageName);
+			if ( null != list && list.length > 0 ) 
+				logMsg.append("Found " + imageName + " in PATH environment variable\n");
+		}
+		if ( null != list && list.length > 0 ) {
+			String s = list[0].toString();
+			logMsg.append(imageName + ": " + s + "\n");
+			return s;
+		} else {
+			return null;
+		}
+	} 
+	
+	public static boolean isNewFPO(String versionStr) throws IOException, InterruptedException{
+		VersionNumber version = new VersionNumber(versionStr);
+		if ( version.compareTo(new VersionNumber("5.8")) >= 0 ) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	public static String getSCAVersion(String sourceanalyzerPath) throws IOException, InterruptedException {
+		ArrayList<String> cmd = new ArrayList<String>();
+		cmd.add(sourceanalyzerPath);
+		cmd.add("-version");
+		
+		ProcessBuilder pb = new ProcessBuilder(cmd);
+		Process proc = pb.start();
+		proc.waitFor();
+		InputStream in = proc.getInputStream();
+		BufferedReader br = new BufferedReader(new InputStreamReader(in));
+		String line = br.readLine();
+		if ( null != line ) {
+			line = line.trim();
+			int x = line.lastIndexOf(' ');
+			if ( -1 != x ) {
+				String scaVersion = line.substring(x).trim();
+				return scaVersion;
+			}
+		}
+		
+		return null;
+	}		
 }

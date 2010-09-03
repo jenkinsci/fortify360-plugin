@@ -47,14 +47,6 @@ public class FPRPublisher extends Recorder {
 	private Long f360projId;
 	private String auditToken;
 	private Integer uploadWaitTime;
-	
-	/** The Javascript (as a string) to run after uploaded the FPR to F360 Server
-	 * <ul>
-	 *   <li>Auto assign issues to users</li>
-	 *   <li>Auto audit/comment</li>
-	 * </ul>
-	 * 
-	 */
 	private String auditScript;
 	
 	@DataBoundConstructor
@@ -91,15 +83,43 @@ public class FPRPublisher extends Recorder {
 	public Long getF360projId() {
 		return f360projId;
 	}
-		
+	
+	/** The AnuditToken
+	 * <p>
+	 * This is per project because different project may have different access right
+	 * </p>
+	 * 
+	 * @return
+	 */
 	public String getAuditToken() {
 		return auditToken;
 	}
 	
+	/** Minute(s) to wait between upload and run the Javascrip AutoAssignment job
+	 * <p>
+	 * F360Srv FPR upload is an async job, meaning I call the WS-API, the API will return once the file is uploaded. 
+	 * But at the server side, F360Srv is still processing the FPR, therefore, if I run the JobAssignment script immediately
+	 * I will run it against the old (last) FPR instead because the newly uploaded FPR is still being inserted into the DB
+	 * and not seen by the WS-client.
+	 * <p>
+	 * Fortify development team will add new API in the future, but before we can check the upload status, we can only sleep
+	 * for a while before we run the JobAssignment script.
+	 * <p>
+	 * Please be noted, in some cases, the newly uploaded FPR will need to be approved, that suitation is not handled currently
+	 * 
+	 * @return sleep time in minute(s), 0-60
+	 */
 	public Integer getUploadWaitTime() {
 		return uploadWaitTime;
 	}
 	
+	/** The Javascript (as a string) to run after uploaded the FPR to F360 Server
+	 * <ul>
+	 *   <li>Auto assign issues to users</li>
+	 *   <li>Auto audit/comment</li>
+	 * </ul>
+	 * 
+	 */
 	public String getAuditScript() {
 		return auditScript;
 	}
@@ -121,10 +141,17 @@ public class FPRPublisher extends Recorder {
 		
 		// calling the remote slave to retrieve the NVS
 		// build.getActions().add(new ChartAction(build.getProject()));
-		StringBuilder logStr = new StringBuilder();
-		RemoteService service = new RemoteService(fpr, filterSet, searchCondition, logStr);
+		String jarsPath = DESCRIPTOR.getJarsPath();
+		String suggestedFortifyHome = null;
+		if ( !StringUtils.isBlank(jarsPath) ) {
+			// jarsPath should be <SCA_Install_Path>/Core/lib
+			File f = new File(jarsPath);
+			suggestedFortifyHome = f.getParentFile().getParentFile().toString();			
+		}
+		RemoteService service = new RemoteService(fpr, filterSet, searchCondition, suggestedFortifyHome);
 		FPRSummary summary = build.getWorkspace().act(service);
-		if (logStr.length() > 0 ) log.printf("%s", logStr.toString());
+		String logMsg = summary.getLogMessage();
+		if ( !StringUtils.isBlank(logMsg) ) log.println(logMsg);
 		
 		// if FPR is a remote FilePath, copy to local
 		File localFPR = null;

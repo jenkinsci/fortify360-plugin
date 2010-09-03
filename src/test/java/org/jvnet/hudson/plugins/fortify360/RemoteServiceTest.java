@@ -21,20 +21,42 @@ public class RemoteServiceTest {
 	// the NVS for old version and new version are different
 	private static boolean useNewFPO;
 	
-	/*
+	private static StringBuilder logMsg;
+	
 	@BeforeClass
 	public static void setUp() throws Exception {
-		noReportGenerator = !SCAMetaInfo.hasReportGenerator();
-		if ( noReportGenerator ) {
-			System.out.println("Test bypassed because reportGenerator was not found");			
+		logMsg = new StringBuilder();
+		
+		noReportGenerator = false;
+		// locate sourceanalyzer
+		String sourceanalyzerPath = RemoteService.locateSourceanalyzer(null, logMsg);
+		if ( null == sourceanalyzerPath ) {
+			System.out.print("Cannot locate sourceanalyzer, will skip plotting NVS chart\n");
+			noReportGenerator = true;
+			return;
+		}
+		String versionStr = RemoteService.getSCAVersion(sourceanalyzerPath);
+		if ( null == versionStr ) {
+			System.out.print("Cannot determine SCA version, will skip plotting NVS chart\n");
+			noReportGenerator = true;
+			return;				
 		}
 		
-		useNewFPO = SCAMetaInfo.isNewFPO();
+		String reportGeneratorPath = RemoteService.locateReportGenerator(null, logMsg); 
+		if ( null == reportGeneratorPath ) {
+			System.out.print("Cannot locate reportGenerator, will skip plotting NVS chart\n");
+			noReportGenerator = true;
+			return;
+		}			
+		
+		useNewFPO = RemoteService.isNewFPO(versionStr);		
 		if ( useNewFPO ) {
 			System.out.println("Calculate NVS base on Critical/High/Medium/Low");
 		} else {
 			System.out.println("Calculate NVS base on Hot/Warning/Info");
 		}
+		
+		noReportGenerator = true;
 	}
 
 	private File resourceToFile(String filename) throws IOException {
@@ -59,7 +81,7 @@ public class RemoteServiceTest {
 			String fpr = "WebGoat_57.fpr";
 			File fprFile = resourceToFile(fpr);
 			File path = fprFile.getParentFile();
-			RemoteService service = new RemoteService(fprFile.getName(), null, null);
+			RemoteService service = new RemoteService(fprFile.getName(), null, null, null);
 			FPRSummary summary = service.invoke(path, null);
 			double nvs = summary.getNvs();
 			Integer count = summary.getFailedCount();
@@ -89,7 +111,7 @@ public class RemoteServiceTest {
  				search = "[fortify priority order]:high category:/SQL Injection|Cross-Site Scripting/";
  			}
 			
-			RemoteService service = new RemoteService(fprFile.getName(), "Likely", search);
+			RemoteService service = new RemoteService(fprFile.getName(), "Likely", search, null);
 			FPRSummary summary = service.invoke(path, null);
 			double nvs = summary.getNvs();
 			Integer count = summary.getFailedCount();
@@ -111,7 +133,7 @@ public class RemoteServiceTest {
 			String fpr = "test1.fpr";
 			File fprFile = resourceToFile(fpr);
 			File path = fprFile.getParentFile();
-			RemoteService service = new RemoteService(fprFile.getName(), "Fortify Priority Order", "[fortify priority order]:high category:/SQL Injection|Cross-Site Scripting/");
+			RemoteService service = new RemoteService(fprFile.getName(), "Fortify Priority Order", "[fortify priority order]:high category:/SQL Injection|Cross-Site Scripting/", null);
 			FPRSummary summary = service.invoke(path, null);
 			double nvs = summary.getNvs();
 			Integer count = summary.getFailedCount();
@@ -128,7 +150,7 @@ public class RemoteServiceTest {
 			String fpr = "test1.fpr";
 			File fprFile = resourceToFile(fpr);
 			File path = fprFile.getParentFile();
-			RemoteService service = new RemoteService(fprFile.getName(), "Fortify Priority Order", "category:j2ee bad practices\\: leftover debug code");
+			RemoteService service = new RemoteService(fprFile.getName(), "Fortify Priority Order", "category:j2ee bad practices\\: leftover debug code", null);
 			FPRSummary summary = service.invoke(path, null);
 			double nvs = summary.getNvs();
 			Integer count = summary.getFailedCount();
@@ -145,7 +167,7 @@ public class RemoteServiceTest {
 			String fpr = "test1.fpr";
 			File fprFile = resourceToFile(fpr);
 			File path = fprFile.getParentFile();
-			RemoteService service = new RemoteService(fprFile.getName(), "Likely", "category:j2ee bad practices\\: leftover debug code");
+			RemoteService service = new RemoteService(fprFile.getName(), "Likely", "category:j2ee bad practices\\: leftover debug code", null);
 			FPRSummary summary = service.invoke(path, null);
 			double nvs = summary.getNvs();
 			Integer count = summary.getFailedCount();
@@ -155,5 +177,4 @@ public class RemoteServiceTest {
 			assertEquals(0, count);
 		}
 	}
-	*/
 }

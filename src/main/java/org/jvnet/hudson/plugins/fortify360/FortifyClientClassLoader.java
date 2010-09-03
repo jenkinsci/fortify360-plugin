@@ -85,9 +85,10 @@ public class FortifyClientClassLoader extends URLClassLoader {
 					log.println("FortifyClientClassLoader: version = " + version + " (by checking md5 of wsclient.jar and wsobjects.jar)");
 				} else {
 					// check the path name, the checking is pretty simple
-					if ( -1 != jarsPath.indexOf("2.6") ) version = "2.6";
-					if ( -1 != jarsPath.indexOf("2.5") ) version = "2.5";
-					if ( -1 != jarsPath.indexOf("2.1") ) version = "2.1";
+					if ( -1 != jarsPath.indexOf("2.6.5") ) version = "2.6.5";
+					else if ( -1 != jarsPath.indexOf("2.6.1") ) version = "2.6.1";
+					else if ( -1 != jarsPath.indexOf("2.6") ) version = "2.6";
+					else if ( -1 != jarsPath.indexOf("2.5") ) version = "2.5";
 					log.println("FortifyClientClassLoader: version = " + version + " (by checking the path of jarsPath)");
 				}
 			} else {
@@ -113,12 +114,11 @@ public class FortifyClientClassLoader extends URLClassLoader {
 			// ok, load the correct version of fortifyclient
 			urls.add(parent.getResource("fortifyclient-" + version + ".jar"));
 
-			URL[] a = new URL[1];
 			for(URL x : urls) {
 				log.println("FortifyClientClassLoader URL: " + x.toString());
 			}
 			log.println("####################################################################");
-			_instance = new FortifyClientClassLoader(urls.toArray(a), parent);
+			_instance = new FortifyClientClassLoader(urls.toArray(new URL[0]), parent);
 		}
 		
 		return _instance;
@@ -189,89 +189,78 @@ public class FortifyClientClassLoader extends URLClassLoader {
 		return url;
 	}	
 	
-	/** By using the search paths, retrieve the path that contains the wsclient.jar
-	 * 
-	 * @return the path that contains the wsclient.jar, null if not found
-	 */
 	public static String findWSClientPath() {
-		Map<String, String> env = System.getenv();
-		String path = null;
-		for(String key : env.keySet()) {
-			// the key may be case sensitive on Unix
-			if ( "PATH".equalsIgnoreCase(key) ) {
-				path = env.get(key);
-				break;
-			}
-		}
-		String pathSep = System.getProperty("path.separator"); // ":" on Unix, ";" on Win
-		if ( null != path ) {
-			String[] array = path.split(Pattern.quote(pathSep)); // need to quote the pathSep coz it is metachar
-			for(String s : array ) {
-				String p = fortifyclientPath(new File(s));
-				if ( null != p ) return p;
+		File[] list = PathUtils.locateBaesnameInPath("fortifyclient");
+		if ( null != list && list.length > 0 ) {
+			File f = list[0];
+			// e.g. f is "C:\\Program Files\\Fortify Software\\Fortify 360 v2.6.5\\bin\\fortifyclient.bat"
+			// we need to change this to "C:\\Program Files\\Fortify Software\\Fortify 360 v2.6.5\\Core\\lib
+			File core = new File(f.getParentFile().getParentFile(), "Core");
+			File lib = new File(core, "lib");
+			File wsclient = new File(lib, "wsclient.jar");
+			if ( wsclient.exists() ) {
+				return lib.toString();
 			}
 		}
 		return null;
 	}
 	
-	/** Check if the path is a Fortify Product path, and if yes, return the path that contains wsclient.jar
-	 * 
-	 * @param path a segment of the search PATH
-	 * @return the path that contains the wsclient.jar, null if it the path is not a F360 product path
-	 */
-	public static String fortifyclientPath(File path) {
-		if ( path.exists() && path.isDirectory() ) {
-			FilenameFilter filter = new FilenameFilter() {
-				@Override
-				public boolean accept(File dir, String name) {
-					int x = name.lastIndexOf(".");
-					String basename = name;
-					if ( x >= 0 ) {
-						basename = name.substring(0, x);
-					}
-					if ( basename.equalsIgnoreCase("fortifyclient") ) return true;
-					else return false;
-				}
-			}; 
-			String[] files = path.list(filter);
-			if ( null != files && files.length > 0 ) {
-				// ok, this path contains "fortifyclient"
-				// there can be two possibilities
-				// 1. the machine installed SCA, <SCA>\bin\fortifyclient, <SCA>\Core\lib\wsclient.jar
-				// 2. the machine installed F360 server Demo Suite and changed the search path
-				// <F360Demo>\Tools\fortifyclient\bin\fortifyclient, <F360Demo>\Tools\fortifyclient\Core\lib\wsclient.jar
-				String s = System.getProperty("file.separator");
-				File jar = new File(path, ".." + s + "Core" + s + "lib" + s + "wsclient.jar");
-				if ( jar.exists() ) return jar.getParentFile().getAbsolutePath();
-			}
-		}
-		return null;
-	}
-	
-	/* use FilePath.digest()
-	public static String md5(File file) throws IOException, NoSuchAlgorithmException {
-		MessageDigest algorithm = MessageDigest.getInstance("MD5");
-		algorithm.reset();
-		FileInputStream in = null;
-		byte[] buf = new byte[1024*8];
-		try {
-			in = new FileInputStream(file);
-			int n = 0;
-			do {
-				n = in.read(buf);
-				if ( n > 0 )  algorithm.update(buf, 0, n);
-			} while ( n > 0 ); 
-			byte messageDigest[] = algorithm.digest();
-			StringWriter sw = new StringWriter();
-			PrintWriter pw = new PrintWriter(sw);
-			for (int i=0;i<messageDigest.length;i++) {
-				pw.printf("%02x", messageDigest[i]);
-			}
-			pw.flush();
-			return sw.toString();
-		} finally {
-			if ( null != in ) try { in.close(); } catch ( Exception e ) { }
-		}
-	}
-	*/
+//	/** By using the search paths, retrieve the path that contains the wsclient.jar
+//	 * 
+//	 * @return the path that contains the wsclient.jar, null if not found
+//	 */
+//	public static String findWSClientPath() {
+//		Map<String, String> env = System.getenv();
+//		String path = null;
+//		for(String key : env.keySet()) {
+//			// the key may be case sensitive on Unix
+//			if ( "PATH".equalsIgnoreCase(key) ) {
+//				path = env.get(key);
+//				break;
+//			}
+//		}
+//		String pathSep = System.getProperty("path.separator"); // ":" on Unix, ";" on Win
+//		if ( null != path ) {
+//			String[] array = path.split(Pattern.quote(pathSep)); // need to quote the pathSep coz it is metachar
+//			for(String s : array ) {
+//				String p = fortifyclientPath(new File(s));
+//				if ( null != p ) return p;
+//			}
+//		}
+//		return null;
+//	}
+//	
+//	/** Check if the path is a Fortify Product path, and if yes, return the path that contains wsclient.jar
+//	 * 
+//	 * @param path a segment of the search PATH
+//	 * @return the path that contains the wsclient.jar, null if it the path is not a F360 product path
+//	 */
+//	public static String fortifyclientPath(File path) {
+//		if ( path.exists() && path.isDirectory() ) {
+//			FilenameFilter filter = new FilenameFilter() {
+//				@Override
+//				public boolean accept(File dir, String name) {
+//					int x = name.lastIndexOf(".");
+//					String basename = name;
+//					if ( x >= 0 ) {
+//						basename = name.substring(0, x);
+//					}
+//					if ( basename.equalsIgnoreCase("fortifyclient") ) return true;
+//					else return false;
+//				}
+//			}; 
+//			String[] files = path.list(filter);
+//			if ( null != files && files.length > 0 ) {
+//				// ok, this path contains "fortifyclient"
+//				// there can be two possibilities
+//				// 1. the machine installed SCA, <SCA>\bin\fortifyclient, <SCA>\Core\lib\wsclient.jar
+//				// 2. the machine installed F360 server Demo Suite and changed the search path
+//				// <F360Demo>\Tools\fortifyclient\bin\fortifyclient, <F360Demo>\Tools\fortifyclient\Core\lib\wsclient.jar
+//				String s = System.getProperty("file.separator");
+//				File jar = new File(path, ".." + s + "Core" + s + "lib" + s + "wsclient.jar");
+//				if ( jar.exists() ) return jar.getParentFile().getAbsolutePath();
+//			}
+//		}
+//		return null;
+//	}
 }

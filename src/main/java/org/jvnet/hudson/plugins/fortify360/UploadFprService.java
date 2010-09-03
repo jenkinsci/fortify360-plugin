@@ -10,6 +10,11 @@ import org.apache.commons.lang.*;
 import hudson.FilePath.FileCallable;
 import hudson.remoting.VirtualChannel;
 
+/**
+ * 
+ * @author sng
+ * @deprecated will now call FortifyClientClassLoader to use reflection to invoke FortifyClient object directly
+ */
 public class UploadFprService implements FileCallable<Integer>, Serializable {
 	
 	private static final long serialVersionUID = 1L;
