@@ -55,8 +55,6 @@ public class RemoteServiceTest {
 		} else {
 			System.out.println("Calculate NVS base on Hot/Warning/Info");
 		}
-		
-		noReportGenerator = true;
 	}
 
 	private File resourceToFile(String filename) throws IOException {
