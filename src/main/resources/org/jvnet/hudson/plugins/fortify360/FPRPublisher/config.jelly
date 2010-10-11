@@ -11,7 +11,7 @@
   <f:entry title="Fortify 360 Server Project Id" field="f360projId" help="/plugin/fortify360/help-f360projId.html">
     <j:choose>
       <j:when test="${descriptor.f360projList != null}">
-		<script type="text/javascript" src="/plugin/fortify360/refresh-f360-projects.js"/>
+		<script type="text/javascript" src="${rootURL}/plugin/fortify360/refresh-f360-projects.js"/>
         <select id="f360projId" name="f360projId">
           <j:forEach var="s" items="${descriptor.f360projList}">
             <f:option value="${s.id}" selected="${instance.f360projId == s.id}">${s.name}</f:option>
