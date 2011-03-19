@@ -7,3 +7,5 @@ wsclient-2.5.jar <-- this is for Fortify 360 server version 2.5
 wsobjects-2.5.jar
 common-2.5.jar
 common13-2.5.jar
+
+And starting from v3.0.0, common.jar and common13.jar are merged into fortify-common.jar. Just duplicate it to common-3.0.0.jar and common13-3.0.0.jar

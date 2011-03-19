@@ -40,6 +40,7 @@ public class FortifyClientClassLoader extends URLClassLoader {
 			wsclientMd5.put("fef8b31efc1488c15ac138e4021c5c18", "2.6");  
 			wsclientMd5.put("71e5f5726daa71aa01c80b9b56bebe73", "2.6.1");  
 			wsclientMd5.put("d3e748409496f0b7da32c65572576b88", "2.6.5");  
+			wsclientMd5.put("1a5c0281ccac18ac2b2d618cf2538591", "3.0.0");
 		}
 		
 		if ( null == wsobjectsMd5 ) {
@@ -49,6 +50,7 @@ public class FortifyClientClassLoader extends URLClassLoader {
 			wsobjectsMd5.put("9446eead6124a69e093844d757395adc", "2.6"); 
 			wsobjectsMd5.put("69bc42ae7246ee91b67817760a21b03c", "2.6.1"); 
 			wsobjectsMd5.put("82ac603b97c135134ecc56df40e9e894", "2.6.5"); 
+			wsobjectsMd5.put("70da5cb9e309898784eeb54d11fbe9df", "3.0.0");
 		}
 	}
 	
@@ -64,8 +66,8 @@ public class FortifyClientClassLoader extends URLClassLoader {
 			if ( StringUtils.isBlank(jarsPath) ) jarsPath = findWSClientPath(); 
 			log.println("####################################################################");
 			log.println("FortifyClientClassLoader: JarsPath = " + jarsPath);
-			File wsclient = new File(jarsPath, "wsclient.jar");
-			File wsobjects = new File(jarsPath, "wsobjects.jar");
+			File wsclient = findFileByJarBasename(new File(jarsPath), "wsclient");
+			File wsobjects = findFileByJarBasename(new File(jarsPath), "wsobjects");
 			if ( !wsclient.exists() || !wsobjects.exists() ) {
 				throw new RuntimeException("Invalid JarsPath: " + jarsPath + ", can't locate wsclient.jar or wsobjects.jar");
 			}
@@ -85,7 +87,8 @@ public class FortifyClientClassLoader extends URLClassLoader {
 					log.println("FortifyClientClassLoader: version = " + version + " (by checking md5 of wsclient.jar and wsobjects.jar)");
 				} else {
 					// check the path name, the checking is pretty simple
-					if ( -1 != jarsPath.indexOf("2.6.5") ) version = "2.6.5";
+					if ( -1 != jarsPath.indexOf("3.0.0") ) version = "3.0.0";
+					else if ( -1 != jarsPath.indexOf("2.6.5") ) version = "2.6.5";
 					else if ( -1 != jarsPath.indexOf("2.6.1") ) version = "2.6.1";
 					else if ( -1 != jarsPath.indexOf("2.6") ) version = "2.6";
 					else if ( -1 != jarsPath.indexOf("2.5") ) version = "2.5";
@@ -99,8 +102,15 @@ public class FortifyClientClassLoader extends URLClassLoader {
 				throw new RuntimeException("Can't determine Fortify 360 Server version");
 			}
 			
-			// unless it is 2.5, we will need the common.jar and common13.jar
-			if ( !version.startsWith("2.5") ) {
+			if ( "3.0.0".equals(version) ) {
+				File fortifyCommon = new File(jarsPath, "fortify-common-" + version + ".jar");
+				if ( !fortifyCommon.exists() ) {
+					throw new RuntimeException("Invalid JarsPath: " + jarsPath + ", can't locate fortify-common-" + version + ".jar");
+				}
+				urls.add(fortifyCommon.toURI().toURL());
+				
+			} else if ( !version.startsWith("2.5") ) {
+				// if not 3.0.0, then we will need the common.jar and common13.jar unless for v2.5
 				// for 2.6, we need to include common.jar and common13.jar as well
 				File common = new File(jarsPath, "common.jar");
 				File common13 = new File(jarsPath, "common13.jar");
@@ -197,10 +207,33 @@ public class FortifyClientClassLoader extends URLClassLoader {
 			// we need to change this to "C:\\Program Files\\Fortify Software\\Fortify 360 v2.6.5\\Core\\lib
 			File core = new File(f.getParentFile().getParentFile(), "Core");
 			File lib = new File(core, "lib");
-			File wsclient = new File(lib, "wsclient.jar");
-			if ( wsclient.exists() ) {
-				return lib.toString();
-			}
+			File wsclient = findFileByJarBasename(lib, "wsclient");
+			if ( null != wsclient ) return lib.toString();
+		}
+		return null;
+	}
+	
+	/** Find the file by using the jar basename
+	 * <p>E.g. you can find wsclient in a given path, then we will try to find
+	 * wsclient.jar, wsclient-x.x.x.jar in the path
+	 * <p>If we can find such a jar, the full name of the jar will be returned
+	 * 
+	 * @param path e.g. a library path
+	 * @param basename e.g. wsclient
+	 * @return the jar file with the given basename
+	 */
+	public static File findFileByJarBasename(File path, String basename) {
+		if ( !path.exists() || !path.isDirectory() ) return null;
+		
+		// find by exact basename.jar
+		File exactFile = new File(path, basename + ".jar");
+		if ( exactFile.exists() ) return exactFile;;
+		
+		// find by basename-x.y.z.jar
+		File[] list = path.listFiles();
+		Pattern p = Pattern.compile(basename + "\\-\\d(\\.\\d+)+\\.jar");
+		for(File file : list) {
+			if (p.matcher(file.getName()).matches()) return file;
 		}
 		return null;
 	}
