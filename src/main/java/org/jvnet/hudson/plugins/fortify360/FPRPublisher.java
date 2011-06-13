@@ -206,8 +206,8 @@ public class FPRPublisher extends Recorder {
 		
 		// now do job assignment
 		if ( !StringUtils.isBlank(auditScript) ) {
-			log.printf("Sleep for %d minute(s)\n", uploadWaitTime);
 			int sleep = (uploadWaitTime != null) ? uploadWaitTime : 1;
+			log.printf("Sleep for %d minute(s)\n", sleep);
 			sleep = sleep * 60 * 1000; // wait time is in minute(s)
 			long sleepUntil = System.currentTimeMillis() + sleep;
 			while(true) {
@@ -268,6 +268,7 @@ public class FPRPublisher extends Recorder {
 			Object out = MethodUtils.invokeMethod(fortifyclient, methodName, args);
 			return out;
 		} catch (InvocationTargetException e ) {
+			System.out.println("Catch exception " + e.getClass().toString());
 			Throwable t = e.getCause();
 			// rethrow the root cause, not the one wrapped by InvocationTargetException
 			if ( t instanceof Exception ) throw (Exception)t;
@@ -383,7 +384,7 @@ public class FPRPublisher extends Recorder {
     		if ( StringUtils.isBlank(value) ) return FormValidation.ok();
 
     		String ver = value.trim();
-    		String[] allowedVersion = {"2.5", "2.5.0", "2.6", "2.6.0", "2.6.1", "2.6.5" };
+    		String[] allowedVersion = {"2.5", "2.5.0", "2.6", "2.6.0", "2.6.1", "2.6.5", "3.0.0", "3.1.0"};
     		if ( contains(allowedVersion, ver) ) {
     			return FormValidation.ok();
     		} else {
@@ -414,8 +415,8 @@ public class FPRPublisher extends Recorder {
     		this.jarsPath = jarsPath;
     		this.version = version;
 			try {
-				// as long as no 
-				invokeFortifyClient(token, "getProjectList", null, System.out);
+				// as long as no exception, that's ok
+				FPRPublisher.invokeFortifyClient(token, "getProjectList", null, System.out);
 	    		return FormValidation.ok("Connection Successful");
 			} catch (Throwable t ) {
 				return FormValidation.error(t.getMessage());

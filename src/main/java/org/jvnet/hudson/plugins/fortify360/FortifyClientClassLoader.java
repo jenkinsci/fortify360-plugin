@@ -41,6 +41,7 @@ public class FortifyClientClassLoader extends URLClassLoader {
 			wsclientMd5.put("71e5f5726daa71aa01c80b9b56bebe73", "2.6.1");  
 			wsclientMd5.put("d3e748409496f0b7da32c65572576b88", "2.6.5");  
 			wsclientMd5.put("1a5c0281ccac18ac2b2d618cf2538591", "3.0.0");
+			wsclientMd5.put("8dca96072c49f8ab2de000574760b9dd", "3.1.0");
 		}
 		
 		if ( null == wsobjectsMd5 ) {
@@ -51,6 +52,7 @@ public class FortifyClientClassLoader extends URLClassLoader {
 			wsobjectsMd5.put("69bc42ae7246ee91b67817760a21b03c", "2.6.1"); 
 			wsobjectsMd5.put("82ac603b97c135134ecc56df40e9e894", "2.6.5"); 
 			wsobjectsMd5.put("70da5cb9e309898784eeb54d11fbe9df", "3.0.0");
+			wsobjectsMd5.put("841eabd671fc1ecb78c9a7123db0d558", "3.1.0");
 		}
 	}
 	
@@ -87,7 +89,8 @@ public class FortifyClientClassLoader extends URLClassLoader {
 					log.println("FortifyClientClassLoader: version = " + version + " (by checking md5 of wsclient.jar and wsobjects.jar)");
 				} else {
 					// check the path name, the checking is pretty simple
-					if ( -1 != jarsPath.indexOf("3.0.0") ) version = "3.0.0";
+					if ( -1 != jarsPath.indexOf("3.1.0") ) version = "3.1.0";
+					else if ( -1 != jarsPath.indexOf("3.0.0") ) version = "3.0.0";
 					else if ( -1 != jarsPath.indexOf("2.6.5") ) version = "2.6.5";
 					else if ( -1 != jarsPath.indexOf("2.6.1") ) version = "2.6.1";
 					else if ( -1 != jarsPath.indexOf("2.6") ) version = "2.6";
@@ -102,7 +105,7 @@ public class FortifyClientClassLoader extends URLClassLoader {
 				throw new RuntimeException("Can't determine Fortify 360 Server version");
 			}
 			
-			if ( "3.0.0".equals(version) ) {
+			if ( null != version && version.startsWith("3") ) {
 				File fortifyCommon = new File(jarsPath, "fortify-common-" + version + ".jar");
 				if ( !fortifyCommon.exists() ) {
 					throw new RuntimeException("Invalid JarsPath: " + jarsPath + ", can't locate fortify-common-" + version + ".jar");

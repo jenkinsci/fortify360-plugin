@@ -63,7 +63,7 @@ sleep 10
 REM =============================================================================
 REM F360 v3.0.0
 REM =============================================================================
-cd "C:\Program Files\Fortify Software\Fortify 360 v2.6.5 Demonstration Suite\bin"
+cd "C:\Program Files\Fortify Software\Fortify 360 v3.0.0 Demonstration Suite\bin"
 call fortifyDemo.cmd start 360
 cd %HOME%
 sleep 2
@@ -71,6 +71,21 @@ call mvn clean
 call mvn package -Dfortify.version=3.0.0
 copy /y target\fortifyclient-3.0.0.jar ..\src\main\resources
 cd "C:\Program Files\Fortify Software\Fortify 360 v3.0.0 Demonstration Suite\bin"
+call fortifyDemo.cmd stop 360
+cd %HOME%
+sleep 10
+
+REM =============================================================================
+REM F360 v3.1.0
+REM =============================================================================
+cd "C:\Program Files\Fortify Software\Fortify 360 v3.1.0 Demonstration Suite\bin"
+call fortifyDemo.cmd start 360
+cd %HOME%
+sleep 2
+call mvn clean
+call mvn package -Dfortify.version=3.1.0
+copy /y target\fortifyclient-3.0.0.jar ..\src\main\resources
+cd "C:\Program Files\Fortify Software\Fortify 360 v3.1.0 Demonstration Suite\bin"
 call fortifyDemo.cmd stop 360
 cd %HOME%
 sleep 10

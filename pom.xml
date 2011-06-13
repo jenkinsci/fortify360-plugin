@@ -14,6 +14,12 @@
   <name>Fortify 360 Plugin</name>
   <version>2.2-SNAPSHOT</version>
   <packaging>hpi</packaging>
+  
+  <scm>
+  	<connection>scm:svn:https://svn.jenkins-ci.org/trunk/hudson/plugins/fortify360</connection>
+  	<developerConnection>scm:svn:https://svn.jenkins-ci.org/trunk/hudson/plugins/fortify360</developerConnection>
+  </scm>
+  
   <organization>
   	<name>Fortify Software Inc</name>
   	<url>http://www.fortify.com</url>
@@ -27,6 +33,17 @@
       <timezone>+8</timezone>
     </developer>
   </developers>
+  
+  <build>
+  	<plugins>
+  		<plugin>
+  			<artifactId>maven-release-plugin</artifactId>
+  			<configuration>
+  				<goals>deploy</goals>
+  			</configuration>
+  		</plugin>
+  	</plugins>
+  </build>
   
   <dependencies>
   	<dependency>
@@ -95,6 +112,13 @@
   <properties>
   	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
+  
+  <distributionManagement>
+    <repository>
+      <id>maven.jenkins-ci.org</id>
+      <url>http://maven.jenkins-ci.org:8081/content/repositories/releases/</url>
+    </repository>
+  </distributionManagement>  
   
   <!-- get every artifact through maven.glassfish.org, which proxies all the artifacts that we need
   <repositories>

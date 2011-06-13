@@ -37,25 +37,28 @@ public class FortifyClientTest {
 		
 		String version = fortifyVersion();
 		if ( "2.5".equals(version) ) {
-			token = "0f3acf57-5eea-4586-b16a-874c94ef236a";
-			auditToken = "23195264-264b-4025-9659-5f2590197993";
+			token = "1b475dc8-663d-4210-a26c-f70bb8fea7c6";
+			auditToken = "e99be68d-5c37-4f98-893f-6a3c29eafabf";
 		} else if ( "2.6".equals(version) ) {
 //			projName = "WebGoat (5.0)";
 //			fprName = "WebGoat_59.fpr";
-			token = "0d47f70e-d163-4055-bb5b-d5267dcd50d3";
-			auditToken = "2bb2c8b8-e736-4881-aa48-5f7a400e01c3";
+			token = "6538f06e-b4b8-4214-aadd-40d1ae701b23";
+			auditToken = "d0415ffe-151e-4fd6-be0c-2c23793227d2";
 		} else if ( "2.6.1".equals(version) ) {
-			token = "24939138-07ac-4e60-bec1-4f4da648dd04";
-			auditToken = "cf84fc06-daee-4f76-974c-ae56a8987cfc";
+			token = "7ecaccb1-82ec-4e58-a6a4-a48635e7a9fc";
+			auditToken = "281edd83-4688-4ce3-9aa4-dcaa5815a905";
 		} else if ( "2.6.5".equals(version) ) {
-			token = "9aa190e1-9f92-4aed-9438-a1a48d7f9153";
-			auditToken = "9fd6ebbf-9ee5-41df-9c89-c0754a8f8ee8";
+			token = "5d8f3575-70a9-4293-8cd6-6c18692cf6aa";
+			auditToken = "51570cca-5d67-4a80-8cb2-76562c6dd875";
 		} else if ( "3.0.0".equals(version) ) {
-			token = "a385cc48-89d2-4255-9227-80bb39547ea1";
-			auditToken = "8d8d202c-fd1e-43c3-939f-0d6a30428496";
+			token = "762f8f67-9e3e-4b29-b9a7-47d44eb5d202";
+			auditToken = "a6449fa6-8e09-4109-aa5d-560689094014";
+		} else if ( "3.1.0".equals(version) ) {
+			token = "ffbd38e8-fb40-4d77-a2dc-2c6b80855822";
+			auditToken = "7a839915-98de-4bde-acf5-630f8e11ffa6";
 		} else {
 			System.out.println("##################################################################");
-			System.out.println("Only F360 Server 2.5 - 3.0.0 are supported, your version is: " + version);
+			System.out.println("Only F360 Server 2.5 - 3.1.0 are supported, your version is: " + version);
 			System.out.println("##################################################################");			
 		}
 		
