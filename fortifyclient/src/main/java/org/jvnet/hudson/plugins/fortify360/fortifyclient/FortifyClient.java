@@ -102,7 +102,7 @@ public class FortifyClient {
 		FPRTransferClient wsclient = new FPRTransferClient(wsTemplateProvider, null, null);
 		Status status = wsclient.uploadFPR(fprFile, projectVersionId);
 		// for v2.6, the return code is -10001... don't ask me why..
-		if ( 0 == status.getCode() || "Background submission succeeded.".equals(status.getMsg()) ) {
+		if ( 0 == status.getCode() || "Background submission succeeded.".equals(status.getMsg()) || "FPR uploaded successfully".equals(status.getMsg()) ) {
 			// ok, successful
 		} else {
 			FortifyWebServiceException e = new FortifyWebServiceException(status);

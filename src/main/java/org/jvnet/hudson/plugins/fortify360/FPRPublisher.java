@@ -384,7 +384,7 @@ public class FPRPublisher extends Recorder {
     		if ( StringUtils.isBlank(value) ) return FormValidation.ok();
 
     		String ver = value.trim();
-    		String[] allowedVersion = {"2.5", "2.5.0", "2.6", "2.6.0", "2.6.1", "2.6.5", "3.0.0", "3.1.0"};
+    		String[] allowedVersion = {"2.5", "2.5.0", "2.6", "2.6.0", "2.6.1", "2.6.5", "3.0.0", "3.1.0", "3.20", "3.30"};
     		if ( contains(allowedVersion, ver) ) {
     			return FormValidation.ok();
     		} else {
@@ -529,6 +529,7 @@ public class FPRPublisher extends Recorder {
     					ProjectVersionBean proj = new ProjectVersionBean(name, map.get(name));
     					list.add(proj);
     				}
+					Collections.sort(list);
     				return list;
     				
     			// many strange thing can happen.... need to catch throwable

@@ -19,7 +19,7 @@ public class PathUtilsTest {
 		File[] list = PathUtils.locateBaesnameInPath("fortifyclient");
 		Assert.assertNotNull(list);
 		Assert.assertEquals(1, list.length);
-		File file = new File("C:\\Program Files\\Fortify Software\\Fortify 360 v3.1.0\\bin\\fortifyclient.bat");
+		File file = new File("C:\\Program Files\\Fortify Software\\HP Fortify v3.30\\bin\\fortifyclient.bat");
 		Assert.assertEquals(file, list[0]);
 	}
 }

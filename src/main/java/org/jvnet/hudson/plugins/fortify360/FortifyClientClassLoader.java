@@ -42,6 +42,8 @@ public class FortifyClientClassLoader extends URLClassLoader {
 			wsclientMd5.put("d3e748409496f0b7da32c65572576b88", "2.6.5");  
 			wsclientMd5.put("1a5c0281ccac18ac2b2d618cf2538591", "3.0.0");
 			wsclientMd5.put("8dca96072c49f8ab2de000574760b9dd", "3.1.0");
+			wsclientMd5.put("00d01db3c35f28adca7a3efb4c89bd34", "3.20");
+			wsclientMd5.put("e435cf228483466d22abd491f9eaddb9", "3.30");
 		}
 		
 		if ( null == wsobjectsMd5 ) {
@@ -53,6 +55,8 @@ public class FortifyClientClassLoader extends URLClassLoader {
 			wsobjectsMd5.put("82ac603b97c135134ecc56df40e9e894", "2.6.5"); 
 			wsobjectsMd5.put("70da5cb9e309898784eeb54d11fbe9df", "3.0.0");
 			wsobjectsMd5.put("841eabd671fc1ecb78c9a7123db0d558", "3.1.0");
+			wsobjectsMd5.put("d1c1beb9f92ab01a7431b1a0b554da4e", "3.20");
+			wsobjectsMd5.put("f5df453aae5c6bcb67ae16cff1b2a089", "3.30");
 		}
 	}
 	
@@ -89,7 +93,9 @@ public class FortifyClientClassLoader extends URLClassLoader {
 					log.println("FortifyClientClassLoader: version = " + version + " (by checking md5 of wsclient.jar and wsobjects.jar)");
 				} else {
 					// check the path name, the checking is pretty simple
-					if ( -1 != jarsPath.indexOf("3.1.0") ) version = "3.1.0";
+					if ( -1 != jarsPath.indexOf("3.30") ) version = "3.30";
+					else if ( -1 != jarsPath.indexOf("3.20") ) version = "3.20";
+					else if ( -1 != jarsPath.indexOf("3.1.0") ) version = "3.1.0";
 					else if ( -1 != jarsPath.indexOf("3.0.0") ) version = "3.0.0";
 					else if ( -1 != jarsPath.indexOf("2.6.5") ) version = "2.6.5";
 					else if ( -1 != jarsPath.indexOf("2.6.1") ) version = "2.6.1";
