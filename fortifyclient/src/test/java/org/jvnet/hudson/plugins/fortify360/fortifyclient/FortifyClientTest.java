@@ -63,9 +63,17 @@ public class FortifyClientTest {
 			token = "d05eb1fa-0c71-4420-9122-e72059c316fa";
 			auditToken = "c8102e40-c2cf-47d6-9e53-1e4c9c36babe";
 			url = url.replace("f360", "ssc");
+		} else if ( "3.40".equals(version) ) {
+			token = "127403a6-2ced-4114-b591-3e4d7617c0ef";
+			auditToken = "4d4f86d6-f7bd-4e58-8ce2-f5309700404d";
+			url = url.replace("f360", "ssc");
+		} else if ( "3.50".equals(version) ) {
+			token = "3d4015f2-5a62-4843-a9fc-5b7ebd3ec538";
+			auditToken = "4241463e-d5a2-4d55-a11c-484b199ee09b";
+			url = url.replace("f360", "ssc");
 		} else {
 			System.out.println("##################################################################");
-			System.out.println("Only F360 Server 2.5 - 3.30 are supported, your version is: " + version);
+			System.out.println("Only F360 Server 2.5 - 3.50 are supported, your version is: " + version);
 			System.out.println("##################################################################");			
 		}
 		

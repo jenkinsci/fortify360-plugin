@@ -384,7 +384,7 @@ public class FPRPublisher extends Recorder {
     		if ( StringUtils.isBlank(value) ) return FormValidation.ok();
 
     		String ver = value.trim();
-    		String[] allowedVersion = {"2.5", "2.5.0", "2.6", "2.6.0", "2.6.1", "2.6.5", "3.0.0", "3.1.0", "3.20", "3.30"};
+    		String[] allowedVersion = {"2.5", "2.5.0", "2.6", "2.6.0", "2.6.1", "2.6.5", "3.0.0", "3.1.0", "3.20", "3.30", "3.40", "3.50"};
     		if ( contains(allowedVersion, ver) ) {
     			return FormValidation.ok();
     		} else {

@@ -16,9 +16,9 @@ import org.junit.Test;
 
 public class FortifyClientClassLoaderTest {
 	
-	private static final String F360_PATH = "C:\\Program Files\\Fortify Software\\HP Fortify v3.30\\Core\\lib";
+	private static final String F360_PATH = "C:\\Program Files\\Fortify Software\\HP Fortify v3.50\\Core\\lib";
 	private static final String F360_URL = "http://localhost:8180/ssc/fm-ws/services";
-	private static final String F360_TOKEN = "d05eb1fa-0c71-4420-9122-e72059c316fa";
+	private static final String F360_TOKEN = "3d4015f2-5a62-4843-a9fc-5b7ebd3ec538";
 	
 	@Test
 	public void testFindWSClientPath() throws IOException {
