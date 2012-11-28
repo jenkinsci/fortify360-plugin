@@ -3,9 +3,11 @@ package org.jvnet.hudson.plugins.fortify360;
 import static org.junit.Assert.*;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.ConnectException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Map;
+import java.util.Properties;
 
 import junit.framework.Assert;
 
@@ -16,9 +18,28 @@ import org.junit.Test;
 
 public class FortifyClientClassLoaderTest {
 	
-	private static final String F360_PATH = "C:\\Program Files\\Fortify Software\\HP Fortify v3.50\\Core\\lib";
-	private static final String F360_URL = "http://localhost:8180/ssc/fm-ws/services";
-	private static final String F360_TOKEN = "3d4015f2-5a62-4843-a9fc-5b7ebd3ec538";
+	private static String F360_PATH = "C:\\Program Files\\Fortify Software\\HP Fortify v{version}\\Core\\lib";
+	private static String F360_URL = "http://localhost:8180/f360/fm-ws/services";
+	private static String F360_TOKEN = null;
+	
+	@BeforeClass
+	public static void setUp() throws Exception {
+		InputStream in = null;
+		Properties prop = new Properties();
+		try {
+			in = FortifyClientClassLoaderTest.class.getClassLoader().getResourceAsStream("fortifyclient.properties");
+			prop.load(in);
+			String ver = prop.getProperty("latest.version");
+			Assert.assertNotNull(ver);			
+			F360_PATH = F360_PATH.replace("{version}", ver);
+			String contextPath = prop.getProperty("contextPath-" + ver, "f360");
+			F360_URL = F360_URL.replace("f360", contextPath);
+			F360_TOKEN = prop.getProperty("token-" + ver);
+			Assert.assertNotNull(F360_TOKEN);	
+		} finally {
+			if ( null != in ) try { in.close(); } catch ( Exception e ) {}
+		}	
+	}	
 	
 	@Test
 	public void testFindWSClientPath() throws IOException {

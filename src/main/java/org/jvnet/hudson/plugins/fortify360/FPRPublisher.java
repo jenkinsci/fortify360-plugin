@@ -384,21 +384,16 @@ public class FPRPublisher extends Recorder {
     		if ( StringUtils.isBlank(value) ) return FormValidation.ok();
 
     		String ver = value.trim();
-    		String[] allowedVersion = {"2.5", "2.5.0", "2.6", "2.6.0", "2.6.1", "2.6.5", "3.0.0", "3.1.0", "3.20", "3.30", "3.40", "3.50"};
-    		if ( contains(allowedVersion, ver) ) {
+			Set<String> supportedVersions = FortifyClientClassLoader.getSupportedVersions();
+    		if ( supportedVersions.contains(ver) ) {
     			return FormValidation.ok();
+			} else if ( supportedVersions.contains(ver + "0") ) {
+				return FormValidation.error("Please change version number to " + ver + "0");
     		} else {
     			return FormValidation.error("Not a valid version number");
     		}
     	}    
-    	
-    	private static boolean contains(String[] list, String value) {
-    		for(int i=0; i<list.length; i++) {
-    			if ( list[i].equals(value) ) return true;
-    		}
-    		return false;
-    	}
-    	
+    	    	
     	public FormValidation doTestConnection(@QueryParameter String url, @QueryParameter String token,
     			                               @QueryParameter String jarsPath, @QueryParameter String version) {
     		

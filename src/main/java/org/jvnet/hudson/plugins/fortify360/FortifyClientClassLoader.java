@@ -24,43 +24,43 @@ public class FortifyClientClassLoader extends URLClassLoader {
 	private static FortifyClientClassLoader _instance;
 	private ClassLoader currentThreadLoader;
 	
-	private static Map<String, String> wsclientMd5 = null;
-	private static Map<String, String> wsobjectsMd5 = null;
+	private static Properties prop = new Properties();
+	private static Set<String> supportedVersions = new TreeSet<String>();
+	private static Map<String, String> wsclientMd5 = new HashMap<String, String>();
+	private static Map<String, String> wsobjectsMd5 = new HashMap<String, String>();
 	
 	public FortifyClientClassLoader(URL[] urls, ClassLoader parent) { 
 		super(urls, parent);
 		currentThreadLoader = null;
 	}
 	
+	public static Set<String> getSupportedVersions() {
+		initMd5Map();
+		return Collections.unmodifiableSet(supportedVersions);
+	}
+	
 	public static synchronized void initMd5Map() {
-		if ( null == wsclientMd5 ) {
-			wsclientMd5 = new HashMap<String, String>();
-			wsclientMd5.put("d370675a710931bc83364cadf6adc226", "2.1");
-			wsclientMd5.put("166485667af7440754e99300df39375f", "2.5");
-			wsclientMd5.put("fef8b31efc1488c15ac138e4021c5c18", "2.6");  
-			wsclientMd5.put("71e5f5726daa71aa01c80b9b56bebe73", "2.6.1");  
-			wsclientMd5.put("d3e748409496f0b7da32c65572576b88", "2.6.5");  
-			wsclientMd5.put("1a5c0281ccac18ac2b2d618cf2538591", "3.0.0");
-			wsclientMd5.put("8dca96072c49f8ab2de000574760b9dd", "3.1.0");
-			wsclientMd5.put("00d01db3c35f28adca7a3efb4c89bd34", "3.20");
-			wsclientMd5.put("e435cf228483466d22abd491f9eaddb9", "3.30");
-			wsclientMd5.put("10083805168cf5fb8ff3122f56a7884e", "3.40");
-			wsclientMd5.put("51299a19a83fe85b2e0f753ea8f31dd1", "3.50");
-		}
-		
-		if ( null == wsobjectsMd5 ) {
-			wsobjectsMd5 = new HashMap<String, String>();
-			wsobjectsMd5.put("220a2991ac70948c72e9ca8ef9411d40", "2.1");
-			wsobjectsMd5.put("dbc1060536612c5e9903c408ce16ca2a", "2.5");
-			wsobjectsMd5.put("9446eead6124a69e093844d757395adc", "2.6"); 
-			wsobjectsMd5.put("69bc42ae7246ee91b67817760a21b03c", "2.6.1"); 
-			wsobjectsMd5.put("82ac603b97c135134ecc56df40e9e894", "2.6.5"); 
-			wsobjectsMd5.put("70da5cb9e309898784eeb54d11fbe9df", "3.0.0");
-			wsobjectsMd5.put("841eabd671fc1ecb78c9a7123db0d558", "3.1.0");
-			wsobjectsMd5.put("d1c1beb9f92ab01a7431b1a0b554da4e", "3.20");
-			wsobjectsMd5.put("f5df453aae5c6bcb67ae16cff1b2a089", "3.30");
-			wsobjectsMd5.put("ccd27276a65a1abb80c71959b4431659", "3.40");
-			wsobjectsMd5.put("c8ce5499a6aa3d4a57ce095ee3e0219c", "3.50");
+		InputStream in = null;
+		try {
+			in = FortifyClientClassLoader.class.getClassLoader().getResourceAsStream("fortify360.properties");
+			prop.load(in);
+		} catch (IOException e) {
+			e.printStackTrace(System.err);
+		} finally {
+			if ( null != in ) try { in.close(); } catch ( Exception e ) {}
+		}		
+		Enumeration<?> names = prop.propertyNames();
+		for (Enumeration<?> e = prop.propertyNames(); e.hasMoreElements();) {
+			String pname = (String)e.nextElement();
+			if ( pname.startsWith("wsclient-") ) {
+				String ver = pname.substring(9);
+				supportedVersions.add(ver);
+				wsclientMd5.put(prop.getProperty(pname), ver);
+			} else if ( pname.startsWith("wsobjects-") ) {
+				String ver = pname.substring(10);
+				supportedVersions.add(ver);
+				wsobjectsMd5.put(prop.getProperty(pname), ver);
+			}
 		}
 	}
 	
@@ -97,16 +97,13 @@ public class FortifyClientClassLoader extends URLClassLoader {
 					log.println("FortifyClientClassLoader: version = " + version + " (by checking md5 of wsclient.jar and wsobjects.jar)");
 				} else {
 					// check the path name, the checking is pretty simple
-					if ( -1 != jarsPath.indexOf("3.50") ) version = "3.50";
-					else if ( -1 != jarsPath.indexOf("3.40") ) version = "3.40";
-					else if ( -1 != jarsPath.indexOf("3.30") ) version = "3.30";
-					else if ( -1 != jarsPath.indexOf("3.20") ) version = "3.20";
-					else if ( -1 != jarsPath.indexOf("3.1.0") ) version = "3.1.0";
-					else if ( -1 != jarsPath.indexOf("3.0.0") ) version = "3.0.0";
-					else if ( -1 != jarsPath.indexOf("2.6.5") ) version = "2.6.5";
-					else if ( -1 != jarsPath.indexOf("2.6.1") ) version = "2.6.1";
-					else if ( -1 != jarsPath.indexOf("2.6") ) version = "2.6";
-					else if ( -1 != jarsPath.indexOf("2.5") ) version = "2.5";
+					// supprtedVersions is something like ["2.1", "2.5", ... "3.50", "3.60", ....], initialized in initMd5Map()
+					for(String ver : supportedVersions) {
+						if ( -1 != jarsPath.indexOf(ver) ) {
+							version = ver;
+							break;
+						}
+					}
 					log.println("FortifyClientClassLoader: version = " + version + " (by checking the path of jarsPath)");
 				}
 			} else {
