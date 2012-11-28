@@ -170,7 +170,7 @@ public class FPRPublisher extends Recorder {
 		summary.save(new File(build.getRootDir(), FPRSummary.FILE_BASENAME));
 		
 		// if the project ID is not null, then we need to upload the FPR to 360 server
-		if ( null != f360projId && DESCRIPTOR.canUploadToF360() ) {
+		if ( null != f360projId && f360projId > 0L && DESCRIPTOR.canUploadToF360() ) {
 			// the FPR may be in remote slave, we need to call launcher to do this for me
 			log.printf("Uploading FPR to Fortify 360 Server at %s\n", DESCRIPTOR.getUrl());
 			try {
@@ -205,7 +205,7 @@ public class FPRPublisher extends Recorder {
 		}
 		
 		// now do job assignment
-		if ( !StringUtils.isBlank(auditScript) ) {
+		if ( null != f360projId && f360projId > 0L && DESCRIPTOR.canUploadToF360() && !StringUtils.isBlank(auditScript) ) {
 			int sleep = (uploadWaitTime != null) ? uploadWaitTime : 1;
 			log.printf("Sleep for %d minute(s)\n", sleep);
 			sleep = sleep * 60 * 1000; // wait time is in minute(s)
