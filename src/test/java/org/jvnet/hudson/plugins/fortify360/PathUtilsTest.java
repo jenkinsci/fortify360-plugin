@@ -11,7 +11,7 @@ import org.junit.Test;
 
 public class PathUtilsTest {
 
-	private static String FORTIFYCLIENT_PATH = "C:\\Program Files\\Fortify Software\\HP Fortify v{version}\\bin\\fortifyclient.bat";
+	private static String FORTIFYCLIENT_PATH = "C:\\Program Files\\HP_Fortify\\HP_Fortify_SCA_and_Apps_{version}\\bin\\fortifyclient.bat";
 
 	@BeforeClass
 	public static void setUp() throws Exception {

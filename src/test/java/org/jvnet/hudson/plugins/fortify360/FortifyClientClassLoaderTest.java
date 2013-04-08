@@ -18,8 +18,8 @@ import org.junit.Test;
 
 public class FortifyClientClassLoaderTest {
 	
-	private static String F360_PATH = "C:\\Program Files\\Fortify Software\\HP Fortify v{version}\\Core\\lib";
-	private static String F360_URL = "http://localhost:8180/f360/fm-ws/services";
+	private static String F360_PATH = "C:\\Program Files\\HP_Fortify\\HP_Fortify_SCA_and_Apps_{version}\\Core\\lib";
+	private static String F360_URL = "http://localhost:8180/ssc/fm-ws/services";
 	private static String F360_TOKEN = null;
 	
 	@BeforeClass

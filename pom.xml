@@ -12,13 +12,13 @@
   <groupId>org.jvnet.hudson.plugins.fortify360</groupId>
   <artifactId>fortify360</artifactId>
   <name>Fortify 360 Plugin</name>
-  <version>3.7-SNAPSHOT</version>
+  <version>3.8</version>
   <packaging>hpi</packaging>
   
   <scm>
-  	<connection>scm:svn:https://svn.jenkins-ci.org/trunk/hudson/plugins/fortify360</connection>
-  	<developerConnection>scm:svn:https://svn.jenkins-ci.org/trunk/hudson/plugins/fortify360</developerConnection>
-    <url>https://svn.jenkins-ci.org/trunk/hudson/plugins/fortify360</url>
+  	<connection>scm:svn:https://svn.jenkins-ci.org/tags/fortify360-3.8</connection>
+  	<developerConnection>scm:svn:https://svn.jenkins-ci.org/tags/fortify360-3.8</developerConnection>
+    <url>https://svn.jenkins-ci.org/tags/fortify360-3.8</url>
   </scm>
   
   <organization>
