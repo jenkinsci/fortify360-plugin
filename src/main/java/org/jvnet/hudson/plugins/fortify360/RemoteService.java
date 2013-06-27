@@ -183,6 +183,9 @@ public class RemoteService implements FilePath.FileCallable<FPRSummary> {
 		ProcessBuilder pb = new ProcessBuilder(cmd);
 		logMsg.append("EXE: " + cmd.toString() + "\n");
 		Process proc = pb.start();
+		// starting from Fortify 3.90, if we don't consume the output, the process won't finish... don't know why
+		new InputReader(proc.getInputStream(), "OUT").start();
+		new InputReader(proc.getErrorStream(), "ERR").start();
 		proc.waitFor();
 		int exitValue = proc.exitValue();
 		//System.out.println("Exit Value = " + exitValue);
@@ -396,4 +399,28 @@ public class RemoteService implements FilePath.FileCallable<FPRSummary> {
 		
 		return null;
 	}		
+	
+	public static class InputReader extends Thread {
+		private InputStream in;
+		private String prefix;
+		
+		public InputReader(InputStream in, String prefix) {
+			this.in = in;
+			this.prefix = prefix;
+		}
+		
+		public void run() {
+			BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+			while(true) {
+				try {
+					String line = reader.readLine();
+					if ( null == line ) break;
+					// System.out.println(prefix + ": " + line);
+				} catch ( IOException e ) {
+					// we can't continue upon exception, otherwise, we might deadloop
+					break;
+				}
+			}			
+		}
+	}
 }
