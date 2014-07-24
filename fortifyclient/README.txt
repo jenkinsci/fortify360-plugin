@@ -2,7 +2,9 @@ FortifyClient is a sub-module of Fortify360 plugin
 
 It is basically a wrapper around wsclient.jar and wsobjects.jar.
 
-When Fortify360 plugin runs, it will dynamically loads this jar and the related wsclient.jar and wsobjects.jar. Since this jar is F360 version dependent, you will need to compile it against different versions of wsclient.jar and wsobjects.jar  Define the fortify.version in order to build the "fortifyclient-x.y.jar"
+When Fortify360 plugin runs, it will dynamically load this jar and the related wsclient.jar and wsobjects.jar. 
+Since this jar is F360 version dependent, you will need to compile it against different versions of wsclient.jar and wsobjects.jar  
+Define the fortify.version in order to build the "fortifyclient-x.y.jar"
 
 e.g.
 mvn package -Dfortify.version=2.1
