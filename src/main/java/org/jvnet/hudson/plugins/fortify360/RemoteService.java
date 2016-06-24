@@ -20,6 +20,7 @@ import org.dom4j.io.SAXReader;
 public class RemoteService implements FilePath.FileCallable<FPRSummary> {
 	
 	private static final long serialVersionUID = 229830219491170076L;
+	private static final Pattern FORTIFY_VERSION_PATTERN = Pattern.compile("Fortify Static Code Analyzer ([0-9\\.]+)");
 	private String fpr;
 	private String filterSet;
 	private String searchCondition;
@@ -388,11 +389,20 @@ public class RemoteService implements FilePath.FileCallable<FPRSummary> {
 		BufferedReader br = new BufferedReader(new InputStreamReader(in));
 		String line = br.readLine();
 		if ( null != line ) {
-			line = line.trim();
-			int x = line.lastIndexOf(' ');
-			if ( -1 != x ) {
-				String scaVersion = line.substring(x).trim();
-				return scaVersion;
+			// using pattern matcher since SCA 16+ will dump used java version like:
+			//   HPE Security Fortify Static Code Analyzer 16.10.0095 (using JVM 1.8.0_72)
+			Matcher matcher = FORTIFY_VERSION_PATTERN.matcher(line);
+			if (matcher.find()) {
+				return matcher.group(1);
+
+			} else {
+				// fallback to legacy version extracting method
+				line = line.trim();
+				int x = line.lastIndexOf(' ');
+				if (-1 != x) {
+					String scaVersion = line.substring(x).trim();
+					return scaVersion;
+				}
 			}
 		}
 		
