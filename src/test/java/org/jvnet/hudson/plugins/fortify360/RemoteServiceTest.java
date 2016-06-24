@@ -1,15 +1,11 @@
 package org.jvnet.hudson.plugins.fortify360;
 
 import java.io.*;
-import java.util.ArrayList;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.jvnet.hudson.plugins.fortify360.FPRSummary;
-import org.jvnet.hudson.plugins.fortify360.RemoteService;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.FilenameUtils;
 
@@ -87,10 +83,10 @@ public class RemoteServiceTest {
 			System.out.println("Fail Count = " + count);
 			if ( useNewFPO ) {
 				assertEquals(107.34, nvs, 0.1);
-				assertEquals(0, count);
+				assertEquals(0, (int) count);
 			} else {
 				assertEquals(95.52, nvs, 0.1);
-				assertEquals(0, count);				
+				assertEquals(0, (int) count);
 			}
 		}
 	}
@@ -117,10 +113,10 @@ public class RemoteServiceTest {
 			System.out.println("Fail Count = " + count);
 			if ( useNewFPO ) {
 				assertEquals(431.75, nvs, 0.1);
-				assertEquals(148, count);
+				assertEquals(148, (int) count);
 			} else {
 				assertEquals(413.25, nvs, 0.1);
-				assertEquals(139, count);				
+				assertEquals(139, (int) count);
 			}
 		}
 	}
@@ -138,7 +134,7 @@ public class RemoteServiceTest {
 			System.out.println("NVS = " + nvs);
 			System.out.println("Fail Count = " + count);
 			assertEquals(50.0, nvs, 0.1);
-			assertEquals(0, count);
+			assertEquals(0, (int) count);
 		}
 	}
 	
@@ -155,7 +151,7 @@ public class RemoteServiceTest {
 			System.out.println("NVS = " + nvs);
 			System.out.println("Fail Count = " + count);
 			assertEquals(50.0, nvs, 0.1);
-			assertEquals(2, count);
+			assertEquals(2, (int) count);
 		}
 	}
 	
@@ -172,7 +168,7 @@ public class RemoteServiceTest {
 			System.out.println("NVS = " + nvs);
 			System.out.println("Fail Count = " + count);
 			assertEquals(30.0, nvs, 0.1);
-			assertEquals(0, count);
+			assertEquals(0, (int) count);
 		}
 	}
 }

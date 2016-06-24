@@ -4,8 +4,7 @@ import java.io.InputStream;
 import java.io.File;
 import java.util.Properties;
 
-import junit.framework.Assert;
-
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 

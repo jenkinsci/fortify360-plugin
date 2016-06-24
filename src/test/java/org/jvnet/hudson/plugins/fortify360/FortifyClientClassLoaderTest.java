@@ -1,18 +1,14 @@
 package org.jvnet.hudson.plugins.fortify360;
 
-import static org.junit.Assert.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.ConnectException;
-import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 import java.util.Properties;
 
-import junit.framework.Assert;
-
 import org.apache.commons.beanutils.MethodUtils;
-import org.junit.Before;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
