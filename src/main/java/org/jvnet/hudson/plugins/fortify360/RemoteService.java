@@ -1,9 +1,8 @@
 package org.jvnet.hudson.plugins.fortify360;
 
 import java.util.*;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipException;
-import java.util.zip.ZipFile;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.io.*;
 
 import hudson.FilePath;
