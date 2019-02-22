@@ -11,7 +11,7 @@
 
   <groupId>org.jvnet.hudson.plugins.fortify360</groupId>
   <artifactId>fortify360</artifactId>
-  <name>Fortify 360 Plugin</name>
+  <name>Fortify 360 Plugin (DEPRECATED)</name>
   <version>4.0-SNAPSHOT</version>
   <packaging>hpi</packaging>
   
