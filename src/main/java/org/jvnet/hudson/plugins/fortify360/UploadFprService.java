@@ -32,7 +32,7 @@ public class UploadFprService implements FileCallable<Integer>, Serializable {
 		System.out.println("Inside uploadToF360 FileCallable invoke");
 		System.out.println("f is " + f);
 		
-		// fortifyclient uploadFPR –projectID <proj_ID> -file XXX.fpr -url http://fortify.ca.com:8080/f360 -authtoken XXXX
+		// fortifyclient uploadFPR -projectID <proj_ID> -file XXX.fpr -url http://fortify.ca.com:8080/f360 -authtoken XXXX
 		String array[] = {"fortifyclient", "uploadFPR", "-projectID", "unknown", "-file", "unknown", "-url", "unknown", "-authtoken", "unknown"};
 		
 		String os = System.getProperty("os.name");

@@ -3,13 +3,10 @@ package org.jvnet.hudson.plugins.fortify360;
 import java.awt.image.BufferedImage;
 import java.io.*;
 
-import static org.junit.Assert.*;
-
 import org.jfree.chart.encoders.SunPNGEncoderAdapter;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.junit.Before;
 import org.junit.Test;
-import org.jvnet.hudson.plugins.fortify360.ChartAction;
 import org.jfree.chart.JFreeChart;
 
 public class ChartActionTest {
