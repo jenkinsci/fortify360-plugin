@@ -1,9 +1,24 @@
 package org.jvnet.hudson.plugins.fortify360;
 
 import hudson.FilePath;
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import hudson.PluginWrapper;
+import hudson.model.Hudson;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintStream;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.regex.Pattern;
 import org.apache.commons.lang.StringUtils;
 
@@ -132,9 +147,24 @@ public class FortifyClientClassLoader extends URLClassLoader {
 				urls.add(common.toURI().toURL());
 				urls.add(common13.toURI().toURL());
 			}
-			
+
 			// ok, load the correct version of fortifyclient
-			urls.add(parent.getResource("fortifyclient-" + version + ".jar"));
+			//urls.add(parent.getResource("fortifyclient-" + version + ".jar"));
+			// load from plugin's WEB-INF/fortify-lib directory
+			Hudson jenkins = Hudson.getInstance();
+			if (jenkins != null) {
+				PluginWrapper pluginWrapper = jenkins.getPluginManager().getPlugin("fortify360");
+				if (pluginWrapper == null) {
+					throw new IllegalStateException("Plugin >fortify360< not loaded");
+				}
+				if (pluginWrapper.baseResourceURL != null) {
+					urls.add(new URL(pluginWrapper.baseResourceURL, "WEB-INF/fortify-lib/fortifyclient-" + version + ".jar"));
+				}
+			}
+			else {
+				//urls.add(new URL("WEB-INF/fortify-lib"));
+				throw new IllegalStateException("Jenkins environment required");
+			}
 
 			for(URL x : urls) {
 				log.println("FortifyClientClassLoader URL: " + x.toString());

@@ -1,27 +1,33 @@
 package org.jvnet.hudson.plugins.fortify360;
 
-import static org.junit.Assert.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.ConnectException;
-import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 import java.util.Properties;
 
 import junit.framework.Assert;
 
 import org.apache.commons.beanutils.MethodUtils;
-import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.WithoutJenkins;
+
 
 public class FortifyClientClassLoaderTest {
-	
+
+	@Rule
+	public JenkinsRule jenkinsRule = new JenkinsRule();
+
 	private static String F360_PATH = "C:\\Program Files\\HP_Fortify\\HP_Fortify_SCA_and_Apps_{version}\\Core\\lib";
 	private static String F360_URL = "http://localhost:8180/ssc/fm-ws/services";
 	private static String F360_TOKEN = null;
-	
+
+	@WithoutJenkins
 	@BeforeClass
 	public static void setUp() throws Exception {
 		InputStream in = null;
@@ -39,9 +45,10 @@ public class FortifyClientClassLoaderTest {
 		} finally {
 			if ( null != in ) try { in.close(); } catch ( Exception e ) {}
 		}	
-	}	
-	
+	}
+
 	@Test
+	@WithoutJenkins
 	public void testFindWSClientPath() throws IOException {
 		String path = FortifyClientClassLoader.findWSClientPath();
 		Assert.assertNotNull(path);
@@ -60,8 +67,9 @@ public class FortifyClientClassLoaderTest {
 			loader.unbindCurrentThread();
 		}
 	}
-	
+
 	@Test
+	@Ignore(value="Fortify Server required for test")
 	public void testGetProjectList() throws Exception {
 		FortifyClientClassLoader loader = FortifyClientClassLoader.getInstance(null, null, System.out);
 		loader.bindCurrentThread();
